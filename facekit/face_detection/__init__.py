@@ -1,0 +1,1 @@
+from .scrfd import SCRFD
