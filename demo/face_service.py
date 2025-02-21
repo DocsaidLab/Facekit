@@ -17,9 +17,8 @@ def main(
         face_bank=face_bank,
     )
     img = cb.imread(img_path)
-    face = face_service([img], do_1n=True)[0][0]
-    print(f"Recognize as {face.who.name} with confidence score = {face.who.confidence:.5f} (0-1)")
-    print(f"Recognize level: {face.who.recognized_level}")
+    faces_on_img = face_service([img], do_1n=True)[0]
+    cb.imwrite(faces_on_img.gen_info_img(), str(cur_folder / "output" / "face_service.jpg"))
 
 
 if __name__ == "__main__":

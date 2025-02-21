@@ -175,14 +175,17 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
                     img[y1:y2, x1:x2] = _downscale(img[y1:y2, x1:x2])
 
                 img = cb.draw_box(img, box, thickness=box_line_scale)
-                text = f"Score: {round(score[0], 4)}"
+                text = f"Score: {round(score[0], 4):.4f}"
 
                 loc = box.left_top - (0, text_size)
                 img = cb.draw_text(
                     img,
                     text,
                     location=loc,
+                    color=(0, 0, 0),
                     text_size=text_size,
+                    stroke_width=2,
+                    stroke_fill=(100, 255, 100),
                 )
 
                 loc = box.left_bottom
@@ -206,6 +209,16 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
                     img = cb.draw_points(img, lmk106pt.numpy(), point_scale)
 
                 img = cb.draw_keypoints(img, lmk5pt, point_scale)
+
+                img = cb.draw_text(
+                    img,
+                    text_to_draw,
+                    location=box.left_bottom,
+                    color=(0, 0, 0),
+                    text_size=text_size // 1.5,
+                    stroke_width=2,
+                    stroke_fill=(100, 255, 100),
+                )
 
         return img
 
