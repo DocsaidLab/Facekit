@@ -1,4 +1,3 @@
-import json
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import capybara as cb
@@ -21,9 +20,7 @@ def gen_prior_centers(
     prior_centers = []
     for feat_size, stride in zip(feat_sizes, anc_strides):
         xx, yy = np.meshgrid(range(feat_size[1]), range(feat_size[0]))
-        prior_grids = (
-            np.stack((xx, yy), -1).reshape(-1, 2).repeat(len(anc_img_scales), axis=0)
-        )
+        prior_grids = np.stack((xx, yy), -1).reshape(-1, 2).repeat(len(anc_img_scales), axis=0)
         prior_grids *= stride
         prior_centers.append(prior_grids)
     prior_centers = np.concatenate(prior_centers, axis=0)
@@ -85,27 +82,25 @@ def get_proposals(
             obj = obj[keep]
             lmk = lmk[keep].reshape(-1, 5, 2)
 
-        proposals_list.append(
-            {
-                "boxes": loc / img_scale,
-                "scores": obj,
-                "lmk5pts": lmk / img_scale,
-            }
-        )
+        proposals_list.append({
+            "boxes": loc / img_scale,
+            "scores": obj,
+            "lmk5pts": lmk / img_scale,
+        })
     return proposals_list
 
 
 class SCRFD:
     file_ids = {
-        "scrfd-2.5g-bnkps-fp32": "",
-        "scrfd-10g-gnkps-fp32": "14dUt73lVOsutYNus2agsPL2F1IkAzsnW",
-        "scrfd-34g-gnkps-fp32": "",
+        "scrfd_2.5g_bnkps_fp32": "",
+        "scrfd_10g_gnkps_fp32": "14dUt73lVOsutYNus2agsPL2F1IkAzsnW",
+        "scrfd_34g_gnkps_fp32": "",
     }
 
     def __init__(
         self,
         model_path: str = None,
-        model_version: str = "scrfd-10g-gnkps-fp32",
+        model_version: str = "scrfd_10g_gnkps_fp32",
         batch_size: int = 1,
         inp_size: Optional[Tuple[int, int]] = (480, 640),  # best settings for the model
         score_th: Optional[float] = None,
@@ -139,14 +134,11 @@ class SCRFD:
 
     def initialize(self) -> None:
         dummy_inputs = {
-            k: np.zeros(self.metadata["InputSize"]).astype(v["dtype"])
-            for k, v in self.engine.input_infos.items()
+            k: np.zeros(self.metadata["InputSize"], dtype=v["dtype"]) for k, v in self.engine.input_infos.items()
         }
         self.engine(**dummy_inputs)
 
-    def preprocess(
-        self, imgs: List[np.ndarray]
-    ) -> Union[List[np.ndarray], List[float]]:
+    def preprocess(self, imgs: List[np.ndarray]) -> Union[List[np.ndarray], List[float]]:
         h, w = self.metadata["InputSize"][2:]
         blobs, img_scales = [], []
         for img in imgs:
@@ -164,9 +156,7 @@ class SCRFD:
             img_scales.append(img_scale)
         return blobs, img_scales
 
-    def postprocess(
-        self, preds: Dict[str, np.ndarray], img_scales: List[float]
-    ) -> List[dict]:
+    def postprocess(self, preds: Dict[str, np.ndarray], img_scales: List[float]) -> List[dict]:
         strides = [x for x in self.metadata["AncStrides"]]
         flat_preds = get_flat_preds(preds, strides)
         h, w = self.metadata["InputSize"][2:]
@@ -198,15 +188,15 @@ class SCRFD:
             for proposals in proposals_list
         ]
 
-    def __call__(self, imgs: List[np.ndarray]) -> List[dict]:
+    def __call__(
+        self,
+        imgs: List[np.ndarray],
+    ) -> List[dict]:
         blobs, scales = self.preprocess(imgs)
         preds = {k: [] for k in self.engine.output_infos.keys()}
         b = self.metadata["InputSize"][0]
         for batch in cb.make_batch(blobs, b):
-            inputs = {
-                name: np.concatenate(append_to_batch(batch, b))
-                for name, _ in self.engine.input_infos.items()
-            }
+            inputs = {name: np.concatenate(append_to_batch(batch, b)) for name, _ in self.engine.input_infos.items()}
             tmp_preds = self.engine(**inputs)
             for k, v in tmp_preds.items():
                 preds[k].append(detach_from_batch(v, len(batch)))

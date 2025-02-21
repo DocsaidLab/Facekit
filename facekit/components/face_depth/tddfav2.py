@@ -1,4 +1,3 @@
-from dataclasses import dataclass, field
 from math import asin, atan2, cos
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -259,10 +258,7 @@ class TDDFAV2:
             "alpha_shp": [40, 1],
             "alpha_exp": [10, 1],
         }
-        dummy_inputs = {
-            k: np.zeros(input_dims[k], dtype=v["dtype"])
-            for k, v in self.bfm_engine.input_infos.items()
-        }
+        dummy_inputs = {k: np.zeros(input_dims[k], dtype=v["dtype"]) for k, v in self.bfm_engine.input_infos.items()}
         self.bfm_engine(**dummy_inputs)
 
     def _transform(
@@ -283,17 +279,15 @@ class TDDFAV2:
     def preprocess(
         self,
         imgs: List[np.ndarray],
-        face_boxes: List[cb.Box],
+        boxes: List[cb.Box],
     ):
-        if len(imgs) != len(face_boxes):
-            raise ValueError(
-                f"imgs and face_boxes should have same length, but got {len(imgs)} and {len(face_boxes)}"
-            )
+        if len(imgs) != len(boxes):
+            raise ValueError(f"imgs and boxes should have same length, but got {len(imgs)} and {len(boxes)}")
 
         blobs = []
         scales = []
         shifts = []
-        for img, box in zip(imgs, face_boxes):
+        for img, box in zip(imgs, boxes):
             blob, scale, shift = self._transform(img, box)
             blobs.append(blob)
             scales.append(scale)
@@ -337,19 +331,12 @@ class TDDFAV2:
         return pts3d
 
     def _gen_3d_landmarks(self, params) -> List[np.ndarray]:
-        lmks = np.stack(
-            [self._reconstruct_vertices(param, dense_flag=False) for param in params]
-        )
+        lmks = np.stack([self._reconstruct_vertices(param, dense_flag=False) for param in params])
         return lmks
 
     def _gen_depth_imgs(self, imgs, params, tri) -> List[np.ndarray]:
-        dense_vertices_list = [
-            self._reconstruct_vertices(param, dense_flag=True) for param in params
-        ]
-        depth_imgs = [
-            depth(img, dense_vertices, tri)
-            for img, dense_vertices in zip(imgs, dense_vertices_list)
-        ]
+        dense_vertices_list = [self._reconstruct_vertices(param, dense_flag=True) for param in params]
+        depth_imgs = [depth(img, dense_vertices, tri) for img, dense_vertices in zip(imgs, dense_vertices_list)]
         return depth_imgs
 
     @staticmethod
@@ -381,10 +368,10 @@ class TDDFAV2:
     def __call__(
         self,
         imgs: List[np.ndarray],
-        face_boxes: List[cb.Box],
+        boxes: List[cb.Box],
         return_depth: bool = False,
     ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
-        blobs, scales, shifts = self.preprocess(imgs, face_boxes)
+        blobs, scales, shifts = self.preprocess(imgs, boxes)
         preds = {k: [] for k in self.engine.output_infos.keys()}
         for batch in cb.make_batch(blobs, self.batch_size):
             inputs = {
@@ -430,17 +417,15 @@ class TDDFAV2:
     @staticmethod
     def draw_results(
         img: np.ndarray,
-        face_boxes: List[cb.Box],
+        boxes: List[cb.Box],
         results: Dict[str, np.ndarray],
         plot_details: bool = False,
     ) -> np.ndarray:
-        if len(face_boxes) != len(results):
-            raise ValueError(
-                f"face_boxes and results should have same length, but got {len(face_boxes)} and {len(results)}"
-            )
+        if len(boxes) != len(results):
+            raise ValueError(f"boxes and results should have same length, but got {len(boxes)} and {len(results)}")
 
         max_text_height = img.shape[0] // 30 + 1
-        for result, face_box in zip(results, face_boxes):
+        for result, face_box in zip(results, boxes):
             lmk2d68pt = cb.Keypoints(result["lmk3d68pt"][..., :2])
             depth_img = result["depth_img"]
             img = cb.draw_keypoints(img, lmk2d68pt)
@@ -453,9 +438,7 @@ class TDDFAV2:
                     f"pitch: {result['pose_degree'][1]:.2f}, "
                     f"roll: {result['pose_degree'][2]:.2f}"
                 )
-                text_height = np.clip(
-                    round(face_box.height * 0.05) + 1, 1, max_text_height
-                )
+                text_height = np.clip(round(face_box.height * 0.05) + 1, 1, max_text_height)
                 img = cb.draw_text(
                     img=img,
                     text=text,
@@ -464,9 +447,7 @@ class TDDFAV2:
                 )
 
                 text = f"pose: {FacePose(result['pose'].item()).name}"
-                text_height = np.clip(
-                    round(face_box.height * 0.05) + 1, 1, max_text_height
-                )
+                text_height = np.clip(round(face_box.height * 0.05) + 1, 1, max_text_height)
                 img = cb.draw_text(
                     img=img,
                     text=text,

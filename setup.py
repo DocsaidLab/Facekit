@@ -15,8 +15,8 @@ def get_sim3dr_ext():
         Extension(
             "sim3dr_cython",
             sources=[
-                "cython/Sim3DR/rasterize.pyx",
-                "cython/Sim3DR/rasterize_kernel.cpp",
+                "facekit/components/face_depth/Sim3DR/rasterize.pyx",
+                "facekit/components/face_depth/Sim3DR/rasterize_kernel.cpp",
             ],
             language="c++",
             include_dirs=[np.get_include(), sysconfig.get_paths()["platinclude"]],

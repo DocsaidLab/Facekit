@@ -6,9 +6,7 @@ from matplotlib import colormaps
 
 RAINBOW = colormaps["rainbow"]
 
-ColorBar = (
-    np.stack([np.array(RAINBOW(x / 600)) for x in range(600)])[:, :3] * 255
-)  # red to blue (0 ~ 1)
+ColorBar = np.stack([np.array(RAINBOW(x / 600)) for x in range(600)])[:, :3] * 255  # red to blue (0 ~ 1)
 ColorBar = ColorBar.round().astype("uint8")[:, None, :]
 ColorBar = np.flip(ColorBar, axis=1)
 ColorBar = np.tile(ColorBar, (1, 10, 1))
@@ -40,9 +38,7 @@ def draw_results(
     show_score_bar: bool = True,
 ):
     plotted = image.copy()
-    plotted = (
-        (plotted - plotted.min()) / (plotted.max() - plotted.min() + 1e-8) * 255
-    ).astype("uint8")
+    plotted = ((plotted - plotted.min()) / (plotted.max() - plotted.min() + 1e-8) * 255).astype("uint8")
     img_h = image.shape[0]
 
     if len(boxes):

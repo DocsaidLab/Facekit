@@ -3,16 +3,17 @@ from typing import Tuple
 import capybara as cb
 from fire import Fire
 
-import facekit as fk
+import facekit.components as fk
+
+cur_folder = cb.get_curdir(__file__)
 
 
 def main(
-    img_path: str,
+    img_path: str = str(cur_folder / "data" / "EmmaWatson1.jpg"),
     score_th: float = 0.5,
     inp_size: Tuple[int, int] = (480, 640),
 ):
-    cur_folder = cb.get_curdir(__file__)
-    face_detection = fk.SCRFD(
+    face_detection = fk.build_face_detection(
         batch_size=8,
         score_th=score_th,
         inp_size=inp_size,
@@ -20,7 +21,10 @@ def main(
     img = cb.imread(img_path)
     proposals_list = face_detection([img] * 7)
     plotted = face_detection.draw_proposals(img, proposals_list[0])
-    cb.imwrite(plotted, cur_folder / "demo.png")
+
+    out_folder = cur_folder / "output"
+    out_folder.mkdir(exist_ok=True, parents=True)
+    cb.imwrite(plotted, out_folder / "face_detection.png")
 
 
 if __name__ == "__main__":
