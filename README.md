@@ -14,7 +14,7 @@ Facekit is a Python library for face detection, face landmark, face detph, face 
 
 ```bash
 tag=v0.1.0
-pip install git+git@github.com:DocsaidLab/Facekit.git@{$tag}
+pip install git+ssh://git@github.com/DocsaidLab/Facekit.git@$tag
 ```
 
 ## Usage
@@ -30,12 +30,12 @@ import capybara as cb
 import facekit as fk
 
 face_service = fk.FaceService(
-	batch_size=1,
-	enable_recognition=True,
-	enable_depth=True,
-	enable_landmark=True,
-	face_bank='path/to/face_bank',
-	recog_level='High',
+    batch_size=1,
+    enable_recognition=True,
+    enable_depth=True,
+    enable_landmark=True,
+    face_bank='path/to/face_bank',
+    recog_level='High',
 )
 img = cb.imread('path/to/image')
 faces_on_img = face_service([img])[0]

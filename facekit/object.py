@@ -167,7 +167,7 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
             for box, score, lmk5pt, tddfa, who, lmk106pt, liveness in zipped:
                 text_size = np.clip(round(box.height / 5), 8, 32)
                 box_line_scale = (box.width / 128).clip(1, 3)
-                point_scale = (box.width / 128).clip(0.3, 2)
+                point_scale = (box.width / 256).clip(0.3, 2)
 
                 # 馬賽克
                 if mosaic_face:

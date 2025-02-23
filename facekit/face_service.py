@@ -37,10 +37,12 @@ class FaceService:
         self.detector = build_face_detection(batch_size=batch_size, **detect_kwargs)
         self.landmarker = build_face_landmark(**landmark_kwargs) if enable_landmark else None
         self.depther = build_face_depth(batch_size=batch_size, **depth_kwargs) if enable_depth else None
+        self.recognizer = (
+            build_face_recognition(batch_size=batch_size, **recognition_kwargs) if enable_recognition else None
+        )
 
-        if enable_recognition:
+        if self.recognizer is not None:
             self.norm = FaceNormalize()
-            self.recognizer = build_face_recognition(batch_size=batch_size, **recognition_kwargs)
             self.comparer = FaceCompare(
                 mapping_table=self.recognizer.mapping_table,
                 method=self.recognizer.compare_method,
@@ -88,7 +90,7 @@ class FaceService:
             for face in faces:
                 if lmk_results is not None:
                     lmk_result = lmk_results[i]
-                    face.lmk68pt = cb.Keypoints(lmk_result["lmk"])
+                    face.lmk106pt = cb.Keypoints(lmk_result["lmk"])
                 if dep_results is not None:
                     dep_result = dep_results[i]
                     face.tddfa = TDDFA(
