@@ -11,6 +11,7 @@ def main(
     face_bank: str = str(cur_folder / "data" / "face_bank"),
 ):
     face_service = fk.FaceService(
+        enable_gender=True,
         enable_depth=True,
         enable_recognition=True,
         enable_landmark=True,

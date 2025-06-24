@@ -73,6 +73,7 @@ class Who(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
 class Face(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     box: cb.Box
     score: Union[float, np.number] = field(default=1.0)
+    gender: Optional[str] = field(default=None)
     lmk5pt: Optional[cb.Keypoints] = field(default=None)
     norm_img: Optional[np.ndarray] = field(default=None)
     tddfa: Optional[TDDFA] = field(default=None)
@@ -158,13 +159,14 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
             zipped = zip(
                 self.box,
                 self.score,
+                self.gender,
                 self.lmk5pt,
                 self.tddfa,
                 self.who,
                 self.lmk106pt,
                 self.liveness,
             )
-            for box, score, lmk5pt, tddfa, who, lmk106pt, liveness in zipped:
+            for box, score, gender, lmk5pt, tddfa, who, lmk106pt, liveness in zipped:
                 text_size = np.clip(round(box.height / 5), 8, 32)
                 box_line_scale = (box.width / 128).clip(1, 3)
                 point_scale = (box.width / 256).clip(0.3, 2)
@@ -190,6 +192,11 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
 
                 loc = box.left_bottom
                 text_to_draw = ""
+
+                if gender is not None:
+                    text_to_draw += f"Gender: {gender}\n"
+                else:
+                    text_to_draw += "Gender: Unknown\n"
 
                 if who is not None:
                     who = who.be_jsonable() if isinstance(who, Who) else who

@@ -12,6 +12,7 @@ from .components import (
     build_face_detection,
     build_face_landmark,
     build_face_recognition,
+    build_gender_detection,
 )
 from .object import TDDFA, Encode, Face, Faces, Who
 
@@ -22,6 +23,7 @@ class FaceService:
     def __init__(
         self,
         batch_size: int = 1,
+        enable_gender: bool = False,
         enable_recognition: bool = False,
         enable_depth: bool = False,
         enable_landmark: bool = False,
@@ -35,6 +37,7 @@ class FaceService:
         # fas_kwargs: Optional[Dict] = {},
     ):
         self.detector = build_face_detection(batch_size=batch_size, **detect_kwargs)
+        self.gender_detector = build_gender_detection(batch_size=1, **detect_kwargs) if enable_gender else None
         self.landmarker = build_face_landmark(**landmark_kwargs) if enable_landmark else None
         self.depther = build_face_depth(batch_size=batch_size, **depth_kwargs) if enable_depth else None
         self.recognizer = (
@@ -77,6 +80,7 @@ class FaceService:
         self,
         faces_list: List[Faces],
         proposals_list: List[Dict[str, np.ndarray]],
+        gender_results: Optional[List[Dict[str, np.ndarray]]] = None,
         lmk_results: Optional[List[Dict[str, np.ndarray]]] = None,
         dep_results: Optional[List[Dict[str, np.ndarray]]] = None,
         enc_results: Optional[List[Dict[str, np.ndarray]]] = None,
@@ -88,6 +92,9 @@ class FaceService:
                 for box, lmk, score in zip(proposals["boxes"], proposals["lmk5pts"], proposals["scores"])
             ]
             for face in faces:
+                if gender_results is not None:
+                    face.gender = gender_results[i]["gender"]
+
                 if lmk_results is not None:
                     lmk_result = lmk_results[i]
                     face.lmk106pt = cb.Keypoints(lmk_result["lmk"])
@@ -130,11 +137,15 @@ class FaceService:
             proposals_list = self.detector(imgs=imgs)
             imgs, boxes, lmk5pts = self._flatten_imgs_and_proposals_list(imgs, proposals_list)
 
+            gender_results = None
             lmk_results = None
             depth_results = None
             enc_results = None
 
             if len(boxes):
+                if self.gender_detector is not None:
+                    gender_results = self.gender_detector(imgs=imgs, boxes=boxes)
+
                 if self.landmarker is not None:
                     lmk_results = self.landmarker(imgs=imgs, boxes=boxes)
 
@@ -150,6 +161,7 @@ class FaceService:
             faces_list = self._fill_results_to_faces_list(
                 faces_list=faces_list,
                 proposals_list=proposals_list,
+                gender_results=gender_results,
                 lmk_results=lmk_results,
                 dep_results=depth_results,
                 enc_results=enc_results,
