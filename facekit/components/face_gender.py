@@ -42,14 +42,14 @@ def imresize_and_pad_if_need(
 
 
 class GenderDetector:
-    file_ids = {
-        "lcnet_050": "1jCrHYJ46Kbwr4WmIoWGTRC4Lx-x8ky5z",
+    repo_ids = {
+        "gender_detection_lcnet_050": "kunkunlin1221/face-gender-lcnet-050",
     }
 
     def __init__(
         self,
         model_path: str = None,
-        model_version: str = "lcnet_050",
+        model_version: str = "gender_detection_lcnet_050",
         batch_size: int = 1,
         gpu_id: int = 0,
         backend: str = "cuda",
@@ -58,8 +58,8 @@ class GenderDetector:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                file_id=self.file_ids[model_version],
-                model_fname=model_version + ".onnx",
+                repo_id=self.repo_ids[model_version],
+                model_fname=f"{model_version}.onnx",
             )
         self.model_path = model_path
         self.engine = cb.ONNXEngine(

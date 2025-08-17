@@ -28,7 +28,7 @@ def rasterize(
     h: Optional[int] = None,
     w: Optional[int] = None,
     c: Optional[int] = None,
-    reverse=False,
+    reverse: bool = False,
 ):
     if bg is not None:
         h, w, c = bg.shape
@@ -188,17 +188,18 @@ def _parse_tffda_param(
 
 
 class TDDFAV2:
-    file_ids = {"tddfav2_mb1_fp32": "1WSFmEtM--guPC4f4IkYBPJpBRzTl99e5"}
-    postprocess_ids = {
-        "bfm_onnx_path": "1w5yOsA9u00hlJq4joIAJ0ooTXifmoSb9",
-        "bfm_npz_path": "1wR57Pzx1XeCEYfyvOg-1TvrHXnkDDCsG",
-        "tri_npy_path": "1nBDqnizKOfIg4L_AyfzzfCpdmBQbWQMQ",
+    repo_ids = {
+        "tddfav2_mbv1_fp32": "kunkunlin1221/face-depth-3d-68_tddfav2-mbv1",
+        # postprocess models
+        "bfm_onnx": "kunkunlin1221/face-depth-3d-68_tddfav2-mbv1",
+        "bfm_npz": "kunkunlin1221/face-depth-3d-68_tddfav2-mbv1",
+        "tri_npy": "kunkunlin1221/face-depth-3d-68_tddfav2-mbv1",
     }
 
     def __init__(
         self,
         model_path: Optional[Union[str, cb.Path]] = None,
-        model_version: str = "tddfav2_mb1_fp32",
+        model_version: str = "tddfav2_mbv1_fp32",
         batch_size: int = 1,
         gpu_id: int = 0,
         backend: str = "cuda",
@@ -207,8 +208,8 @@ class TDDFAV2:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                self.file_ids[model_version],
-                model_version + ".onnx",
+                repo_id=self.repo_ids[model_version],
+                model_fname=f"{model_version}.onnx",
             )
         self.model_path = model_path
         self.batch_size = batch_size
@@ -224,15 +225,15 @@ class TDDFAV2:
         self.metadata.freeze()
 
         bfm_onnx_path = download_model_and_return_model_fpath(
-            file_id=self.postprocess_ids["bfm_onnx_path"],
+            repo_id=self.repo_ids["bfm_onnx"],
             model_fname="bfm_noneck_v3.onnx",
         )
         bfm_npz_path = download_model_and_return_model_fpath(
-            file_id=self.postprocess_ids["bfm_npz_path"],
+            repo_id=self.repo_ids["bfm_npz"],
             model_fname="bfm_noneck_v3.npz",
         )
         tri_npy_path = download_model_and_return_model_fpath(
-            file_id=self.postprocess_ids["tri_npy_path"],
+            repo_id=self.repo_ids["tri_npy"],
             model_fname="tri.npy",
         )
         self.bfm_engine = cb.ONNXEngine(
