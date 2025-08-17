@@ -46,7 +46,7 @@ cb.imwrite('path/to/output', faces_on_img.gen_info_img())
 ## Citation
 @misc{lin2025facekit,
   author = {Kun-Hsiang Lin},
-  title = {Facekit: A face tool kit for easily face processing},
+  title = {Facekit: A face tool kit for easy face processing},
   year = {2025},
   publisher = {GitHub},
   url = {https://github.com/DocsaidLab/Facekit},
