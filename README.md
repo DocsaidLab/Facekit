@@ -4,6 +4,8 @@
 
 Facekit is a Python library for face detection, face landmark, face detph, face recognition, etc.
 
+<img src="docs/teaser.jpg" alt="Facekit Overview">
+
 ## Installation
 
 ### Requirements

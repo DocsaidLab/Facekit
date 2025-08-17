@@ -99,7 +99,7 @@ class GenderDetector:
     def postprocess(self, preds: Dict[str, np.ndarray]) -> List[dict]:
         return [
             {
-                "gender": "female" if pred.argmax() else "male",
+                "gender": "Female" if pred.argmax() else "Male",
                 "th": 0.5,
                 "info": {
                     "model_fpath": self.model_path,
