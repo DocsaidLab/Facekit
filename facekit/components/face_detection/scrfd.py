@@ -91,9 +91,9 @@ def get_proposals(
 
 
 class SCRFD:
-    file_ids = {
+    repo_ids = {
         "scrfd_2.5g_bnkps_fp32": "",
-        "scrfd_10g_gnkps_fp32": "14dUt73lVOsutYNus2agsPL2F1IkAzsnW",
+        "scrfd_10g_gnkps_fp32": "kunkunlin1221/face-detection_scrfd-10g-gnkps",
         "scrfd_34g_gnkps_fp32": "",
     }
 
@@ -111,8 +111,8 @@ class SCRFD:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                file_id=self.file_ids[model_version],
-                model_fname=model_version + ".onnx",
+                repo_id=self.repo_ids[model_version],
+                model_fname=f"{model_version}.onnx",
             )
         self.model_path = model_path
         self.engine = cb.ONNXEngine(
@@ -188,10 +188,7 @@ class SCRFD:
             for proposals in proposals_list
         ]
 
-    def __call__(
-        self,
-        imgs: List[np.ndarray],
-    ) -> List[dict]:
+    def __call__(self, imgs: List[np.ndarray]) -> List[dict]:
         blobs, scales = self.preprocess(imgs)
         preds = {k: [] for k in self.engine.output_infos.keys()}
         b = self.metadata["InputSize"][0]

@@ -11,7 +11,7 @@ from .utils import l2_norm
 class ArcFace:
     model_list = {
         "wf42m_pfc03_vit-l_fp32": {
-            "file_id": "1vjGxAEkGc78znqDDw_1-y75j8SgvGcWJ",
+            "repo_id": "kunkunlin1221/face-recognition_vit-l-pfc0.3-cosface-web42m",
             "version": "1.0",
         }
     }
@@ -29,8 +29,8 @@ class ArcFace:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                file_id=self.model_list[model_version]["file_id"],
-                model_fname=model_version + ".onnx",
+                repo_id=self.model_list[model_version]["repo_id"],
+                model_fname=f"{model_version}.onnx",
             )
         self.model_path = model_path
         self.engine = cb.ONNXEngine(

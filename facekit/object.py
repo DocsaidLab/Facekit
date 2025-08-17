@@ -179,7 +179,7 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
                 img = cb.draw_box(img, box, thickness=box_line_scale)
                 text = f"Score: {round(score[0], 4):.4f}"
 
-                loc = box.left_top - (0, text_size)
+                loc = box.left_top - (0, text_size + box.height // 50 + 1)
                 img = cb.draw_text(
                     img,
                     text,
@@ -213,14 +213,14 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
                     text_to_draw += f"Yaw: {tddfa['yaw']:.2f}, Roll: {tddfa['roll']:.2f}, Pitch: {tddfa['pitch']:.2f}\n"
 
                 if lmk106pt is not None:
-                    img = cb.draw_points(img, lmk106pt.numpy(), point_scale)
+                    img = cb.draw_points(img, lmk106pt.numpy(), point_scale, colors=(100, 220, 0))
 
                 img = cb.draw_keypoints(img, lmk5pt, point_scale)
 
                 img = cb.draw_text(
                     img,
                     text_to_draw,
-                    location=box.left_bottom,
+                    location=box.left_bottom + (0, box.height // 50 + 1),
                     color=(0, 0, 0),
                     text_size=text_size // 1.5,
                     stroke_width=2,

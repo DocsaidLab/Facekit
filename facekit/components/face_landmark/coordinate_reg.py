@@ -28,15 +28,15 @@ class CoorinateReg:
     # for eye scores
     EyePoints = {"right": {"width": [35, 39], "height": [33, 40]}, "left": {"width": [81, 93], "height": [87, 94]}}
 
-    file_ids = {
-        "coordinate_reg_mb1_fp32": "1rS2gsBvxvNktK9sEYEu3aZhWTT4DBweV",  # This model only supports batch_size=1.
-        "coordinate_reg_mb1_int8": "1XpNsPdHJSFFJS7IgPe88j8NssHMVqyTi",  # This model only supports batch_size=1.
+    repo_ids = {
+        "coordinate_reg_mbv1_fp32": "kunkunlin1221/face-landmarks-2d-106_mbv1",  # This model only supports batch_size=1.
+        "coordinate_reg_mbv1_int8": "kunkunlin1221/face-landmarks-2d-106_mbv1",  # This model only supports batch_size=1.
     }
 
     def __init__(
         self,
         model_path: Optional[str] = None,
-        model_version: str = "coordinate_reg_mb1_fp32",
+        model_version: str = "coordinate_reg_mbv1_fp32",
         gpu_id: int = 0,
         backend: str = "cuda",
         session_option: Dict[str, Any] = {},
@@ -46,8 +46,8 @@ class CoorinateReg:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                file_id=self.file_ids[model_version],
-                model_fname=model_version + ".onnx",
+                repo_id=self.repo_ids[model_version],
+                model_fname=f"{model_version}.onnx",
             )
         self.model_path = model_path
         self.engine = cb.ONNXEngine(

@@ -2,22 +2,21 @@ from typing import Dict, List, Tuple, Union
 
 import capybara as cb
 import numpy as np
-from gdown import download
+from huggingface_hub import hf_hub_download
 
 
 def download_model_and_return_model_fpath(
-    file_id: str,
+    repo_id: str,
     model_fname: str,
 ) -> cb.Path:
     target_folder = cb.Path.home() / ".cache/facekit"
     target_folder.mkdir(parents=True, exist_ok=True)
-    model_fpath = target_folder / model_fname
-    if not model_fpath.exists():
-        download(
-            id=file_id,
-            output=str(target_folder / model_fname),
-        )
-    return model_fpath
+    model_fpath = hf_hub_download(
+        repo_id=repo_id,
+        filename=model_fname,
+        cache_dir=str(target_folder),
+    )
+    return cb.Path(model_fpath)
 
 
 def append_to_batch(xs: List[np.ndarray], batch_size: int) -> List[np.ndarray]:

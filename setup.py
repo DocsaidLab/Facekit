@@ -7,7 +7,7 @@ from setuptools import Extension, setup
 
 def prepare_requirements():
     subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy", "cython"])
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy<2.0", "cython"])
 
 
 def get_sim3dr_ext():
