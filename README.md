@@ -48,11 +48,10 @@ cb.imwrite('path/to/output', faces_on_img.gen_info_img())
 
 ```bibtex
 @misc{lin2025facekit,
-  author = {Kun-Hsiang Lin},
-  title = {Facekit: A face tool kit for easy face processing},
-  year = {2025},
-  publisher = {GitHub},
-  url = {https://github.com/DocsaidLab/Facekit},
-  note = {GitHub repository}
+  author       = {Kun-Hsiang Lin},
+  title        = {FaceKit: An Integrated Toolkit for Face Analysis},
+  year         = {2025},
+  publisher    = {GitHub},
+  howpublished = {\url{https://github.com/DocsaidLab/Facekit}}
 }
 ```
