@@ -14,7 +14,7 @@ Facekit is a Python library for face detection, face landmark, face detph, face 
 
 ```bash
 tag=v0.2.0
-pip install git+ssh://git@github.com/DocsaidLab/Facekit.git@$tag
+pip install git+https://git@github.com/DocsaidLab/Facekit.git@$tag
 ```
 
 ## Usage
