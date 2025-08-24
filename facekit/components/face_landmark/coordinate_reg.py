@@ -9,7 +9,7 @@ from ..utils import download_model_and_return_model_fpath
 from .utils import calc_distance, get_line_lenght, get_vector, norm_ratio, prepare_input_data
 
 
-class CoorinateReg:
+class CoordinateReg:
     FaceEdge = slice(0, 33)
     RightEye = slice(33, 43)
     LeftEye = slice(87, 97)
@@ -203,3 +203,8 @@ class CoorinateReg:
             )
 
         return img
+
+    @classmethod
+    def download_models(cls):
+        for name, model in cls.repo_ids.items():
+            download_model_and_return_model_fpath(repo_id=model, model_fname=f"{name}.onnx")

@@ -92,9 +92,9 @@ def get_proposals(
 
 class SCRFD:
     repo_ids = {
-        "scrfd_2.5g_bnkps_fp32": "",
         "scrfd_10g_gnkps_fp32": "kunkunlin1221/face-detection_scrfd-10g-gnkps",
-        "scrfd_34g_gnkps_fp32": "",
+        # "scrfd_2.5g_bnkps_fp32": "",
+        # "scrfd_34g_gnkps_fp32": "",
     }
 
     def __init__(
@@ -228,3 +228,8 @@ class SCRFD:
                 )
             )
         return plotteds
+
+    @classmethod
+    def download_models(cls):
+        for name, model in cls.repo_ids.items():
+            download_model_and_return_model_fpath(repo_id=model, model_fname=f"{name}.onnx")

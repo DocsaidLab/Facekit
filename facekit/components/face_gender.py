@@ -150,6 +150,11 @@ class GenderDetector:
             img = self.draw_result(img, box, result)
         return img
 
+    @classmethod
+    def download_models(cls):
+        for name, model in cls.repo_ids.items():
+            download_model_and_return_model_fpath(repo_id=model, model_fname=f"{name}.onnx")
+
 
 def build_gender_detection(name: str = "gender_detection", **kwargs):
     if name == "gender_detection":

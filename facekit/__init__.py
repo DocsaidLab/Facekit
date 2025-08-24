@@ -1,5 +1,6 @@
 from .components import *
 from .face_service import *
 from .object import *
+from .utils import download_models
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"

@@ -190,6 +190,9 @@ def _parse_tffda_param(
 class TDDFAV2:
     repo_ids = {
         "tddfav2_mbv1_fp32": "kunkunlin1221/face-depth-3d-68_tddfav2-mbv1",
+    }
+
+    postprocess = {
         # postprocess models
         "bfm_onnx": "kunkunlin1221/face-depth-3d-68_tddfav2-mbv1",
         "bfm_npz": "kunkunlin1221/face-depth-3d-68_tddfav2-mbv1",
@@ -225,15 +228,15 @@ class TDDFAV2:
         self.metadata.freeze()
 
         bfm_onnx_path = download_model_and_return_model_fpath(
-            repo_id=self.repo_ids["bfm_onnx"],
+            repo_id=self.postprocess["bfm_onnx"],
             model_fname="bfm_noneck_v3.onnx",
         )
         bfm_npz_path = download_model_and_return_model_fpath(
-            repo_id=self.repo_ids["bfm_npz"],
+            repo_id=self.postprocess["bfm_npz"],
             model_fname="bfm_noneck_v3.npz",
         )
         tri_npy_path = download_model_and_return_model_fpath(
-            repo_id=self.repo_ids["tri_npy"],
+            repo_id=self.postprocess["tri_npy"],
             model_fname="tri.npy",
         )
         self.bfm_engine = cb.ONNXEngine(
@@ -473,3 +476,11 @@ class TDDFAV2:
             )
 
         return img
+
+    @classmethod
+    def download_models(cls):
+        for name, model in cls.repo_ids.items():
+            download_model_and_return_model_fpath(repo_id=model, model_fname=f"{name}.onnx")
+        download_model_and_return_model_fpath(repo_id=cls.postprocess["bfm_onnx"], model_fname="bfm_noneck_v3.onnx")
+        download_model_and_return_model_fpath(repo_id=cls.postprocess["bfm_npz"], model_fname="bfm_noneck_v3.npz")
+        download_model_and_return_model_fpath(repo_id=cls.postprocess["tri_npy"], model_fname="tri.npy")
