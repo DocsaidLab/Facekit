@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "numpy", "cython"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pyface"
+dynamic = ["version"]
+description = "An Integrated Python Package for Face Analysis."
+readme = "README.md"
+license = {text = "Apache License 2.0"}
+requires-python = ">=3.10,<3.13"
+authors = [
+  {name = "kunkunlin", email = "jacklin@cmlab.csie.ntu.edu.tw"}
+]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "License :: OSI Approved :: Apache Software License",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries",
+  "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[project.urls]
+Homepage = "https://github.com/DocsaidLab/PyFace"
+Repository = "https://github.com/DocsaidLab/PyFace"
+Issues = "https://github.com/DocsaidLab/PyFace/issues"
+
+dependencies = [
+  "scikit-image==0.25.2",
+  "scipy==1.11.4",
+  "capybara_docsaid",
+  "huggingface_hub"
+]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["demo", "tests"]
+
+[tool.setuptools.dynamic]
+version = {attr = "facekit.__version__"}
