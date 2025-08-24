@@ -1,5 +1,13 @@
 # PyFace
 
+<p align="left">
+    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
+    <a href=""><img src="https://img.shields.io/badge/python-3.10+-aff.svg"></a>
+    <a href="https://github.com/DocsaidLab/PyFace/releases"><img src="https://img.shields.io/github/v/release/DocsaidLab/PyFace?color=ffa"></a>
+    <a href="https://pypi.org/project/pyface_docsaid/"><img src="https://img.shields.io/pypi/v/pyface_docsaid.svg"></a>
+    <a href="https://pypi.org/project/pyface_docsaid/"><img src="https://img.shields.io/pypi/dm/pyface_docsaid?color=9cf"></a>
+</p>
+
 ## Introduction
 
 PyFace is a Python library for face detection, face landmark, face detph, face recognition, etc.

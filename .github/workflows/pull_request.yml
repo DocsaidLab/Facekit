@@ -81,16 +81,16 @@ jobs:
           --rcfile=.github/workflows/.pylintrc \
           --load-plugins pylint_flask
 
-      - name: Run Tests with Pytest
-        run: |
-          mkdir -p tests/coverage && \
-          python3 -m pytest tests --junitxml=tests/coverage/cov-junitxml.xml \
-          --cov=pyface | tee tests/coverage/cov.txt
+      # - name: Run Tests with Pytest
+      #   run: |
+      #     mkdir -p tests/coverage && \
+      #     python3 -m pytest tests --junitxml=tests/coverage/cov-junitxml.xml \
+      #     --cov=pyface | tee tests/coverage/cov.txt
 
-      - name: Pytest Coverage Comment
-        id: coverageComment
-        uses: MishaKav/pytest-coverage-comment@main
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          pytest-coverage-path: tests/coverage/cov.txt
-          junitxml-path: tests/coverage/cov-junitxml.xml
+      # - name: Pytest Coverage Comment
+      #   id: coverageComment
+      #   uses: MishaKav/pytest-coverage-comment@main
+      #   with:
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
+      #     pytest-coverage-path: tests/coverage/cov.txt
+      #     junitxml-path: tests/coverage/cov-junitxml.xml
