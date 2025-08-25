@@ -4,14 +4,13 @@ import sysconfig
 
 from setuptools import Extension, setup
 
+if __name__ == "__main__":
+    subprocess.call([sys.executable, "-m", "pip", "install", "cython", "numpy"])
 
-def prepare_requirements():
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "--upgrade", "pip"])
-    subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy<2.0", "cython"])
+    import numpy as np
+    from Cython.Build import cythonize
 
-
-def get_sim3dr_ext():
-    return [
+    ext_modules = cythonize([
         Extension(
             "sim3dr_cython",
             sources=[
@@ -22,11 +21,5 @@ def get_sim3dr_ext():
             include_dirs=[np.get_include(), sysconfig.get_paths()["platinclude"]],
             extra_compile_args=["-std=c++11"],
         )
-    ]
-
-
-if __name__ == "__main__":
-    prepare_requirements()
-    import numpy as np
-
-    setup(ext_modules=get_sim3dr_ext())
+    ])
+    setup(ext_modules=ext_modules)

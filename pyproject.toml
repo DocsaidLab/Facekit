@@ -24,12 +24,6 @@ classifiers = [
   "Topic :: Software Development :: Libraries",
   "Topic :: Software Development :: Libraries :: Python Modules"
 ]
-
-[project.urls]
-Homepage = "https://github.com/DocsaidLab/PyFace"
-Repository = "https://github.com/DocsaidLab/PyFace"
-Issues = "https://github.com/DocsaidLab/PyFace/issues"
-
 dependencies = [
   "scikit-image==0.25.2",
   "scipy==1.11.4",
@@ -37,11 +31,16 @@ dependencies = [
   "huggingface_hub"
 ]
 
+[project.urls]
+Homepage = "https://github.com/DocsaidLab/PyFace"
+Repository = "https://github.com/DocsaidLab/PyFace"
+Issues = "https://github.com/DocsaidLab/PyFace/issues"
+
 [tool.setuptools]
 include-package-data = true
 
 [tool.setuptools.packages.find]
-exclude = ["demo", "tests"]
+exclude = ["demo", "tests", "docs", ".github", "docker"]
 
 [tool.setuptools.dynamic]
-version = {attr = "facekit.__version__"}
+version = {attr = "pyface.__version__"}

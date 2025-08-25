@@ -282,7 +282,7 @@ def drop_too_small_faces(
             small_mask = np.stack((boxes.width < w, boxes.height < h)).any(0)
             if small_mask.sum():
                 small_boxes = boxes[small_mask].scale(fx=2, fy=2)
-                cropped_imgs = cb.imcropboxes(faces.raw_image, small_boxes, with_padding=True)
+                cropped_imgs = cb.imcropboxes(faces.raw_image, small_boxes, use_pad=True)
                 cropped_imgs = [cb.imadjust(x) for x in cropped_imgs]
                 small_imgs.extend(cropped_imgs)
                 small_inds.extend([(i, j) for j in np.where(small_mask)[0].tolist()])

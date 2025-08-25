@@ -4,7 +4,7 @@ from typing import List, Tuple, Union
 import capybara as cb
 import cv2
 import numpy as np
-from skimage.transform import estimate_transform
+from skimage import transform
 
 __all__ = [
     "get_norm_pts2d",
@@ -92,7 +92,7 @@ def face_normalize(
     dst_pts = get_norm_pts2d(dst_size)
     dst_pts = scale_norm_pts2d(dst_pts, scale, dst_size)
     dst_pts = dst_pts + shift
-    M = estimate_transform("similarity", src_pts, dst_pts).params[:2]
+    M = transform.estimate_transform("similarity", src_pts, dst_pts).params[:2]
     warpped = cv2.warpAffine(
         src=img,
         M=M,
