@@ -379,10 +379,7 @@ class TDDFAV2:
         preds = {k: [] for k in self.engine.output_infos.keys()}
         for batch in cb.make_batch(blobs, self.batch_size):
             inputs = {
-                name: np.concatenate(
-                    append_to_batch(batch, self.batch_size),
-                    dtype=v["dtype"],
-                )
+                name: np.concatenate(append_to_batch(batch, self.batch_size)).astype(v["dtype"])  # E1123
                 for name, v in self.engine.input_infos.items()
             }
             tmp_preds = self.engine(**inputs)

@@ -107,7 +107,6 @@ class GenderDetector:
             }
             for pred in preds["output"]
         ]
-        breakpoint()
 
     def __call__(self, imgs: List[np.ndarray], boxes: List[cb.Box]) -> List[dict]:
         blobs = self.preprocess(imgs, boxes)
