@@ -10,7 +10,7 @@ on:
 
 env:
   LOCAL_REGISTRY: localhost:5000
-  DOCKERFILE: docker/pr.dockerfile
+  DOCKERFILE: docker/Dockerfile
 
 jobs:
   get_runner_and_uid:
@@ -61,6 +61,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        # with:
+        #   lfs: true
 
       - name: Install Dependencies
         run: |
