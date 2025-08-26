@@ -12,13 +12,14 @@ on:
         required: true
 
 jobs:
-  Release:
+  release:
     runs-on: [self-hosted, unicorn]
-    strategy:
-      matrix:
-        python-version:
-          - "3.10"
-          - "3.12"
+    env:
+      CIBW_BUILD: "cp310-* cp311-* cp312-*"
+      CIBW_SKIP: "pp* *-musllinux_*"
+      CIBW_ARCHS: "x86_64"
+      CIBW_MANYLINUX_X86_64_IMAGE: "manylinux_2_28"
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -27,31 +28,50 @@ jobs:
           token: ${{ secrets.CI_PAT_DS }}
           fetch-depth: 0
 
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python (host)
         uses: actions/setup-python@v5
         with:
           check-latest: true
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.12"
 
-      - name: Update Python version
+      - name: Bump package version
         run: |
           sed -i "s/__version__ = '[0-9]\+\(\.[0-9]\+\)\{1,2\}\(rc[0-9]\+\|[ab][0-9]\+\)\?'/__version__ = '${{ github.event.inputs.version_tag }}'/g" pyface/__init__.py
 
-      - name: Commit & Push changes of Version Updating
+      - name: Commit & Push version bump
         uses: actions-js/push@master
         with:
           branch: ${{ github.event.inputs.branch }}
           message: "[C] Update package version"
           github_token: ${{ secrets.CI_PAT_DS }}
 
-      - name: Build wheel
+      - name: Install build tooling
         run: |
-          python -m pip install setuptools wheel twine
-          python setup.py bdist_wheel
-          python -m twine upload dist/*.whl
+          python -m pip install -U pip
+          python -m pip install -U build twine cibuildwheel
 
-      - name: Create Release
-        id: create_release
+      - name: Build sdist (PEP 517)
+        run: |
+          rm -rf dist build *.egg-info wheelhouse
+          python -m build --sdist
+
+      - name: Build manylinux wheels with cibuildwheel
+        run: |
+          python -m cibuildwheel --platform linux --output-dir wheelhouse
+
+      - name: List artifacts
+        run: |
+          echo "== dist =="
+          ls -al dist || true
+          echo "== wheelhouse =="
+          ls -al wheelhouse || true
+
+      - name: Twine check & upload to PyPI
+        run: |
+          python -m twine check dist/* wheelhouse/*
+          python -m twine upload --skip-existing dist/* wheelhouse/*
+
+      - name: Create GitHub Release (attach sdist & wheels)
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ github.event.inputs.version_tag }}
@@ -64,8 +84,10 @@ jobs:
           prerelease: false
           generateReleaseNotes: true
           discussionCategory: General
-          artifacts: "${{ github.workspace }}/dist/pyface_docsaid-*-none-any.whl"
+          artifacts: |
+            ${{ github.workspace }}/dist/*.tar.gz
+            ${{ github.workspace }}/wheelhouse/*.whl
 
-      - name: Clean wheel
-        run: |
-          rm -fr ${{ github.workspace }}/dist/*
+      - name: Clean artifacts
+        if: always()
+        run: rm -rf dist wheelhouse build *.egg-info

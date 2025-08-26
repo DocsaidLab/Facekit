@@ -1,16 +1,21 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel", "numpy", "cython"]
+requires = [
+  "setuptools>=69",
+  "wheel",
+  "Cython>=3.0.10",
+  "numpy>=2"        # 建置時使用 NumPy 2 的 header
+]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pyface"
+name = "pyface-docsaid"
 dynamic = ["version"]
 description = "An Integrated Python Package for Face Analysis."
 readme = "README.md"
-license = {text = "Apache License 2.0"}
+license = { text = "Apache License 2.0" }
 requires-python = ">=3.10,<3.13"
 authors = [
-  {name = "kunkunlin", email = "jacklin@cmlab.csie.ntu.edu.tw"}
+  { name = "kunkunlin", email = "jacklin@cmlab.csie.ntu.edu.tw" }
 ]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -25,8 +30,9 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 dependencies = [
+  "numpy>=2",                 # 執行期也支援 NumPy 2
   "scikit-image",
-  "capybara_docsaid",
+  "capybara-docsaid",         # ← 與 setup.cfg 統一，使用連字號
   "huggingface_hub"
 ]
 
@@ -39,7 +45,8 @@ Issues = "https://github.com/DocsaidLab/PyFace/issues"
 include-package-data = true
 
 [tool.setuptools.packages.find]
+include = ["pyface*"]
 exclude = ["demo", "tests", "docs", ".github", "docker"]
 
 [tool.setuptools.dynamic]
-version = {attr = "pyface.__version__"}
+version = { attr = "pyface.__version__" }
