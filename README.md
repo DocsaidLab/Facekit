@@ -10,7 +10,7 @@
 
 PyFace is a Python library for face detection, face landmark, face depth, face recognition, etc.
 
-![PyFace Overview](docs/teaser.jpg)
+![PyFace Overview](https://media.githubusercontent.com/media/DocsaidLab/PyFace/refs/heads/main/docs/teaser.jpg)
 
 ## Installation
 
