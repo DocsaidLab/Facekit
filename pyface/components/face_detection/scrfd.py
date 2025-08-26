@@ -100,7 +100,7 @@ class SCRFD:
     def __init__(
         self,
         model_path: str = None,
-        model_version: str = "scrfd_10g_gnkps_fp32",
+        model_name: str = "scrfd_10g_gnkps_fp32",
         batch_size: int = 1,
         inp_size: Optional[Tuple[int, int]] = (480, 640),  # best settings for the model
         score_th: Optional[float] = None,
@@ -111,8 +111,8 @@ class SCRFD:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                repo_id=self.repo_ids[model_version],
-                model_fname=f"{model_version}.onnx",
+                repo_id=self.repo_ids[model_name],
+                model_fname=f"{model_name}.onnx",
             )
         self.model_path = model_path
         self.engine = cb.ONNXEngine(

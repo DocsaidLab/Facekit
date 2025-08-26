@@ -6,18 +6,8 @@ import cv2
 import numpy as np
 
 from ..enums import FacePose
-from ..utils import (
-    append_to_batch,
-    detach_from_batch,
-    download_model_and_return_model_fpath,
-)
-
-try:
-    import sim3dr_cython as sim3dr
-except ImportError:
-    import warnings
-
-    warnings.warn("sim3dr_cython not found, make sure you have installed it.")
+from ..utils import append_to_batch, detach_from_batch, download_model_and_return_model_fpath
+from .Sim3DR import sim3dr_cython
 
 
 def rasterize(
@@ -29,18 +19,34 @@ def rasterize(
     w: Optional[int] = None,
     c: Optional[int] = None,
     reverse: bool = False,
-):
+) -> np.ndarray:
+    """
+    Rasterizes 3D vertices onto a 2D image plane.
+
+    Args:
+        vertices (np.ndarray): The 3D vertices to be rasterized.
+        triangles (np.ndarray): The triangle indices for the vertices.
+        colors (np.ndarray): The colors for each vertex.
+        bg (Optional[np.ndarray], optional): The background image. Defaults to None.
+        h (Optional[int], optional): The height of the output image. Defaults to None.
+        w (Optional[int], optional): The width of the output image. Defaults to None.
+        c (Optional[int], optional): The number of channels in the output image. Defaults to None.
+        reverse (bool, optional): Whether to reverse the rasterization. Defaults to False.
+
+    Returns:
+        np.ndarray: The rasterized 2D image.
+    """
     if bg is not None:
         h, w, c = bg.shape
     else:
         assert h is not None and w is not None and c is not None
-        bg = np.zeros((h, w, c), dtype=np.uint8)
+        bg = np.zeros((h, w, c), dtype="uint8")
 
     buffer = np.zeros((h, w), dtype=np.float32) - 1e8
 
     if colors.dtype != np.float32:
         colors = colors.astype(np.float32)
-    sim3dr.rasterize(
+    sim3dr_cython.rasterize(
         bg,
         vertices,
         triangles,
@@ -61,11 +67,7 @@ def arr_to_ctype(arr: np.ndarray) -> np.ndarray:
     return arr
 
 
-def depth(
-    img: np.ndarray,
-    vertices: np.ndarray,
-    tri: np.ndarray,
-) -> np.ndarray:
+def depth(img: np.ndarray, vertices: np.ndarray, tri: np.ndarray) -> np.ndarray:
     overlap = img.copy()
 
     ver = arr_to_ctype(vertices)  # transpose
@@ -83,13 +85,7 @@ def depth(
     return overlap
 
 
-def P2sRt(
-    P: np.ndarray,
-) -> Tuple[
-    np.ndarray,
-    np.ndarray,
-    np.ndarray,
-]:
+def P2sRt(P: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Decompositing camera matrix P.
 
@@ -202,7 +198,7 @@ class TDDFAV2:
     def __init__(
         self,
         model_path: Optional[Union[str, cb.Path]] = None,
-        model_version: str = "tddfav2_mbv1_fp32",
+        model_name: str = "tddfav2_mbv1_fp32",
         batch_size: int = 1,
         gpu_id: int = 0,
         backend: str = "cuda",
@@ -211,8 +207,8 @@ class TDDFAV2:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                repo_id=self.repo_ids[model_version],
-                model_fname=f"{model_version}.onnx",
+                repo_id=self.repo_ids[model_name],
+                model_fname=f"{model_name}.onnx",
             )
         self.model_path = model_path
         self.batch_size = batch_size

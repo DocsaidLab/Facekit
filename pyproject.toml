@@ -3,7 +3,7 @@ requires = [
   "setuptools>=69",
   "wheel",
   "cython>=3.0.10",
-  "numpy>=2"        # 建置時使用 NumPy 2 的 header
+  "numpy>=2"
 ]
 build-backend = "setuptools.build_meta"
 
@@ -13,7 +13,7 @@ dynamic = ["version"]
 description = "An Integrated Python Package for Face Analysis."
 readme = "README.md"
 license = { text = "Apache License 2.0" }
-requires-python = ">=3.10,<3.13"
+requires-python = ">=3.10"
 authors = [
   { name = "kunkunlin", email = "jacklin@cmlab.csie.ntu.edu.tw" }
 ]
@@ -24,7 +24,6 @@ classifiers = [
   "Intended Audience :: Science/Research",
   "Operating System :: OS Independent",
   "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Topic :: Software Development :: Libraries",
   "Topic :: Software Development :: Libraries :: Python Modules"
@@ -32,7 +31,7 @@ classifiers = [
 dependencies = [
   "numpy>=2",                 # 執行期也支援 NumPy 2
   "scikit-image",
-  "capybara-docsaid",         # ← 與 setup.cfg 統一，使用連字號
+  "capybara-docsaid",
   "huggingface_hub"
 ]
 
@@ -50,3 +49,14 @@ exclude = ["demo", "tests", "docs", ".github", "docker"]
 
 [tool.setuptools.dynamic]
 version = { attr = "pyface.__version__" }
+
+[tool.cibuildwheel]
+build = ["cp310-*", "cp312-*"]
+skip = ["*-win32", "*-manylinux_i686", "*-musllinux_*"]
+
+[tool.cibuildwheel.macos]
+archs = ["arm64"]
+
+# On an Linux Intel runner with qemu installed, build Intel and ARM wheels
+[tool.cibuildwheel.linux]
+archs = ["x86_64"]
