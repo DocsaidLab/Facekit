@@ -3,8 +3,8 @@
 [![license](https://img.shields.io/badge/license-Apache%202-dfd.svg)](./LICENSE)
 [![python](https://img.shields.io/badge/python-3.10+-aff.svg)](./pyproject.toml)
 [![release](https://img.shields.io/github/v/release/DocsaidLab/PyFace?color=ffa)](https://github.com/DocsaidLab/PyFace/releases)
-[![pypi](https://img.shields.io/pypi/v/pyface_docsaid.svg)](https://pypi.org/project/pyface_docsaid/)
-[![downloads](https://img.shields.io/pypi/dm/pyface_docsaid?color=9cf)](https://pypi.org/project/pyface_docsaid/)
+[![pypi](https://img.shields.io/pypi/v/pyface-docsaid.svg)](https://pypi.org/project/pyface-docsaid/)
+[![downloads](https://img.shields.io/pypi/dm/pyface-docsaid?color=9cf)](https://pypi.org/project/pyface-docsaid/)
 
 ## Introduction
 
@@ -35,7 +35,8 @@ pip install git+https://github.com/DocsaidLab/PyFace.git
 Because onnxsim is not prebuilt in Python 3.12. We recommend prebuild it manually.
 
 ```bash
-pip install pip wheel setuptools onnxsim
+pip install wheel setuptools
+pip install onnxsim
 pip install pyface-docsaid
 ```
 
@@ -67,8 +68,6 @@ faces_on_img = face_service([img])[0]
 # Plotted faces on image
 cb.imwrite('path/to/output', faces_on_img.gen_info_img())
 ```
-
-### Mac User
 
 ## Citation
 
