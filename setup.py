@@ -1,8 +1,13 @@
+import subprocess
+import sys
 import sysconfig
 
-import numpy as np
-from Cython.Build import cythonize
 from setuptools import Extension, setup
+
+subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy>=2.0", "cython>=3.0.10"])
+
+import numpy as np  # noqa: E402
+from Cython.Build import cythonize  # noqa: E402
 
 py_inc = sysconfig.get_paths().get("include")
 py_platinc = sysconfig.get_paths().get("platinclude")

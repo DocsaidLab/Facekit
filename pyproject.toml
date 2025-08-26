@@ -2,7 +2,7 @@
 requires = [
   "setuptools>=69",
   "wheel",
-  "Cython>=3.0.10",
+  "cython>=3.0.10",
   "numpy>=2"        # 建置時使用 NumPy 2 的 header
 ]
 build-backend = "setuptools.build_meta"
