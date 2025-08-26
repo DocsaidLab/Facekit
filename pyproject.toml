@@ -53,10 +53,3 @@ version = { attr = "pyface.__version__" }
 [tool.cibuildwheel]
 build = ["cp310-*", "cp312-*"]
 skip = ["*-win32", "*-manylinux_i686", "*-musllinux_*"]
-
-[tool.cibuildwheel.macos]
-archs = ["arm64"]
-
-# On an Linux Intel runner with qemu installed, build Intel and ARM wheels
-[tool.cibuildwheel.linux]
-archs = ["x86_64"]
