@@ -109,6 +109,12 @@ jobs:
           artifacts: |
             wheelhouse/**/*.whl
 
+      - name: Set up Python (host)
+        uses: actions/setup-python@v5
+        with:
+          check-latest: true
+          python-version: "3.12
+
       - name: Twine check & upload to PyPI
         run: |
           python -m twine check wheelhouse/**/*
