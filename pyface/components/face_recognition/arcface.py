@@ -17,7 +17,7 @@ class ArcFace:
     def __init__(
         self,
         model_path: Optional[str] = None,
-        model_version: str = "wf42m_pfc03_vit-l_fp32",
+        model_name: str = "wf42m_pfc03_vit-l_fp32",
         batch_size: int = 1,
         enable_flip: bool = False,
         gpu_id: int = 0,
@@ -27,8 +27,8 @@ class ArcFace:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                repo_id=self.repo_ids[model_version],
-                model_fname=f"{model_version}.onnx",
+                repo_id=self.repo_ids[model_name],
+                model_fname=f"{model_name}.onnx",
             )
         self.model_path = model_path
         self.engine = cb.ONNXEngine(
@@ -43,7 +43,7 @@ class ArcFace:
         self.metadata["Mean"] = [127.5, 127.5, 127.5]
         self.metadata["Std"] = [128, 128, 128]
         self.metadata["ColorMode"] = "rgb"
-        self.metadata["Version"] = self.versions[model_version]
+        self.metadata["Version"] = self.versions[model_name]
         self.metadata.freeze()
         self.initialize()
 

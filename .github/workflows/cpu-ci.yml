@@ -1,0 +1,76 @@
+name: Pull Request for Multiple Platform with CPU
+
+on:
+  pull_request:
+    branches: [main]
+    paths-ignore:
+      - "doc/**"
+      - "**.md"
+
+jobs:
+  ci:
+    name: CI
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+        os: ["ubuntu-latest", "macos-13", "macos-latest"] # "ubuntu-24.04-arm" unsupported
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Install Prerequisites for Linux
+        if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm' }}
+        run:
+          sudo apt update && sudo apt install -y libturbojpeg exiftool ffmpeg libheif-dev poppler-utils
+
+      - name: Install Prerequisites for MacOS
+        if: ${{ matrix.os == 'macos-13' || matrix.os == 'macos-latest' }}
+        run:
+          brew install libjpeg exiftool ffmpeg libheif poppler
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          check-latest: true
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install -U pip wheel "numpy>=2" "cython>=3.0.12" "setuptools>=69"
+          python setup.py build_ext --inplace
+          python -m pip install .
+
+      - name: Lint with Pylint
+        run: |
+          python -m pip install pylint
+          python -m pylint pyface --rcfile=.github/workflows/.pylintrc
+
+      - name: Run Tests with Pytest
+        run: |
+          mkdir -p tests/coverage
+          python -m pip install pytest pytest-cov typeguard
+          python -m pytest tests --junitxml=tests/coverage/cov-junitxml.xml --cov=pyface
+
+      - name: Surface failing tests
+        uses: pmeier/pytest-results-action@main
+        with:
+          path: tests/coverage/cov-junitxml.xml
+          summary: true
+          display-options: fEX
+          fail-on-empty: true
+          title: Test results
+
+      - name: Clean artifacts
+        run:
+          rm -rf dist wheelhouse build *.egg-info
+
+      - name: Clean workspace when fail
+        if: failure()
+        run:
+          rm -rf ${{ github.workspace }}

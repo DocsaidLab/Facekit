@@ -18,14 +18,7 @@ RUN apt-get update -y && apt-get upgrade -y && \
 
 # 將 python 指令指向 python3
 RUN ln -s /usr/bin/python3 /usr/bin/python && \
-    python -m pip install --no-cache-dir -U pip setuptools wheel
-
-COPY . /usr/local/PyFace
-RUN cd /usr/local/PyFace && python setup.py bdist_wheel && \
-    python -m pip install dist/*.whl && rm -rf /usr/local/PyFace
-
-# Preload data
-RUN python -c "import pyface"
+    python -m pip install --no-cache-dir -U pip
 
 WORKDIR /code
 

@@ -49,7 +49,7 @@ class GenderDetector:
     def __init__(
         self,
         model_path: str = None,
-        model_version: str = "gender_detection_lcnet_050",
+        model_name: str = "gender_detection_lcnet_050",
         batch_size: int = 1,
         gpu_id: int = 0,
         backend: str = "cuda",
@@ -58,8 +58,8 @@ class GenderDetector:
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
-                repo_id=self.repo_ids[model_version],
-                model_fname=f"{model_version}.onnx",
+                repo_id=self.repo_ids[model_name],
+                model_fname=f"{model_name}.onnx",
             )
         self.model_path = model_path
         self.engine = cb.ONNXEngine(

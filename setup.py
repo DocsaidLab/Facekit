@@ -1,25 +1,37 @@
-import subprocess
-import sys
+# import subprocess
+# import sys
 import sysconfig
 
+# subprocess.check_call([sys.executable, "-m", "pip", "install", "numpy>=2.0", "cython>=3.0.10"])
+import numpy as np  # noqa: E402
+from Cython.Build import cythonize  # noqa: E402
 from setuptools import Extension, setup
 
-if __name__ == "__main__":
-    subprocess.call([sys.executable, "-m", "pip", "install", "cython", "numpy"])
+py_inc = sysconfig.get_paths().get("include")
+py_platinc = sysconfig.get_paths().get("platinclude")
 
-    import numpy as np
-    from Cython.Build import cythonize
+inc_dirs = [
+    "pyface/components/face_depth/Sim3DR",
+    np.get_include(),
+]
+# 有些 runner 只放其中一個，把能拿到的全加進去
+for p in (py_inc, py_platinc):
+    if p:
+        inc_dirs.append(p)
 
-    ext_modules = cythonize([
+ext_modules = cythonize(
+    [
         Extension(
-            "sim3dr_cython",
+            "pyface.components.face_depth.Sim3DR.sim3dr_cython",
             sources=[
                 "pyface/components/face_depth/Sim3DR/rasterize.pyx",
                 "pyface/components/face_depth/Sim3DR/rasterize_kernel.cpp",
             ],
+            include_dirs=inc_dirs,
             language="c++",
-            include_dirs=[np.get_include(), sysconfig.get_paths()["platinclude"]],
             extra_compile_args=["-std=c++11"],
         )
-    ])
-    setup(ext_modules=ext_modules)
+    ],
+    language_level="3",
+)
+setup(ext_modules=ext_modules)

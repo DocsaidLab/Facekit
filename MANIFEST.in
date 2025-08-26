@@ -1,0 +1,2 @@
+include README.md LICENSE
+recursive-include pyface/components/face_depth/Sim3DR *.pyx *.pxd *.h *.cpp
