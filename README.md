@@ -1,18 +1,16 @@
 # PyFace
 
-<p align="left">
-    <a href="./LICENSE"><img src="https://img.shields.io/badge/license-Apache%202-dfd.svg"></a>
-    <a href=""><img src="https://img.shields.io/badge/python-3.10+-aff.svg"></a>
-    <a href="https://github.com/DocsaidLab/PyFace/releases"><img src="https://img.shields.io/github/v/release/DocsaidLab/PyFace?color=ffa"></a>
-    <a href="https://pypi.org/project/pyface_docsaid/"><img src="https://img.shields.io/pypi/v/pyface_docsaid.svg"></a>
-    <a href="https://pypi.org/project/pyface_docsaid/"><img src="https://img.shields.io/pypi/dm/pyface_docsaid?color=9cf"></a>
-</p>
+[![license](https://img.shields.io/badge/license-Apache%202-dfd.svg)](./LICENSE)
+[![python](https://img.shields.io/badge/python-3.10+-aff.svg)](./pyproject.toml)
+[![release](https://img.shields.io/github/v/release/DocsaidLab/PyFace?color=ffa)](https://github.com/DocsaidLab/PyFace/releases)
+[![pypi](https://img.shields.io/pypi/v/pyface_docsaid.svg)](https://pypi.org/project/pyface_docsaid/)
+[![downloads](https://img.shields.io/pypi/dm/pyface_docsaid?color=9cf)](https://pypi.org/project/pyface_docsaid/)
 
 ## Introduction
 
-PyFace is a Python library for face detection, face landmark, face detph, face recognition, etc.
+PyFace is a Python library for face detection, face landmark, face depth, face recognition, etc.
 
-<img src="docs/teaser.jpg" alt="PyFace Overview">
+![PyFace Overview](docs/teaser.jpg)
 
 ## Installation
 
@@ -45,12 +43,17 @@ face_service = pf.FaceService(
     enable_landmark=True,
     face_bank='path/to/face_bank',
     recog_level='High',
+    detect_kwargs={"gpu_id": 0, "backend": "cuda"}, # if you want to use GPU on detection
+    landmark_kwargs={"backend": "cpu"}, # if you want to use CPU on landmark
+    ...
 )
 img = cb.imread('path/to/image')
 faces_on_img = face_service([img])[0]
 # Plotted faces on image
 cb.imwrite('path/to/output', faces_on_img.gen_info_img())
 ```
+
+### Mac User
 
 ## Citation
 
