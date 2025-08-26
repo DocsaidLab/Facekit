@@ -18,10 +18,25 @@ PyFace is a Python library for face detection, face landmark, face depth, face r
 
 - Python 3.10+
 
-### Install from GitHub
+### Install via pypi
+
+```bash
+pip install pyface-docsaid
+```
+
+### Install via GitHub
 
 ```bash
 pip install git+https://github.com/DocsaidLab/PyFace.git
+```
+
+### For Python 3.12
+
+Because onnxsim is not prebuilt in Python 3.12. We recommend prebuild it manually.
+
+```bash
+pip install pip wheel setuptools onnxsim
+pip install pyface-docsaid
 ```
 
 ## Usage
