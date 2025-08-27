@@ -364,13 +364,14 @@ class TDDFAV2:
         blobs, scales, shifts = self.preprocess(imgs, boxes)
         preds = {k: [] for k in self.engine.output_infos.keys()}
         for batch in cb.make_batch(blobs, self.batch_size):
+            current_batch_size = len(batch)
             inputs = {
                 name: np.concatenate(append_to_batch(batch, self.batch_size)).astype(v["dtype"])  # E1123
                 for name, v in self.engine.input_infos.items()
             }
             tmp_preds = self.engine(**inputs)
             for k, v in tmp_preds.items():
-                preds[k].append(detach_from_batch(v, len(batch)))
+                preds[k].append(detach_from_batch(v, current_batch_size))
         preds = {k: np.concatenate(v, 0) for k, v in preds.items()}
         scales = np.stack(scales, 0)  # n x 2
         shifts = np.stack(shifts, 0)  # n x 2
