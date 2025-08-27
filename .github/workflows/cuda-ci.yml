@@ -7,18 +7,58 @@ on:
       - "doc/**"
       - "**.md"
 
-jobs:
-  ci:
-    name: CI
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.10", "3.12"]
+env:
+  LOCAL_REGISTRY: localhost:5000
+  DOCKERFILE: docker/pr.dockerfile
 
-    runs-on: ["self-hosted", "unicorn"]
+jobs:
+  get_runner_and_uid:
+    name: Get Runner
+    runs-on: [self-hosted, unicorn]
+    steps:
+      - name: Get UID and GID
+        id: uid_gid
+        run: |
+          echo "uid_gid=$(id -u):$(id -g)" >> "$GITHUB_OUTPUT"
+    outputs:
+      runner: ${{ runner.name }}
+      uid: ${{ steps.uid_gid.outputs.uid_gid }}
+
+  build_docker_image:
+    name: Build Docker Image
+    needs: [get_runner_and_uid]
+    runs-on: ${{ needs.get_runner_and_uid.outputs.runner }}
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker Image
+        id: docker_build
+        uses: docker/build-push-action@v3
+        with:
+          file: ${{ env.DOCKERFILE }}
+          no-cache: false
+          push: true
+          tags: ${{ env.LOCAL_REGISTRY }}/pyface-container:ci
+
+    outputs:
+      image: ${{ env.LOCAL_REGISTRY }}/pyface-container:ci
+
+  ci:
+    name: CI
+    needs: [get_runner_and_uid, build_docker_image]
+    runs-on: ${{ needs.get_runner_and_uid.outputs.runner }}
+    strategy:
+      matrix:
+        python-version:
+          - "3.10"
+    container:
+      image: ${{ needs.build_docker_image.outputs.image }}
+      options: --user ${{ needs.get_runner_and_uid.outputs.uid }} --gpus all
+
+    steps:
+      - name: Checkout Repository
         uses: actions/checkout@v4
         with:
           lfs: true
@@ -29,16 +69,22 @@ jobs:
           python-version: ${{ matrix.python-version }}
           check-latest: true
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: |
-          python -m pip install -U pip wheel "numpy>=2" "cython>=3.0.12" "setuptools>=69"
-          python setup.py build_ext --inplace
-          python -m pip install .
+          python3 -m pip install pytest wheel pylint pylint-flask pytest-cov typeguard
 
-      - name: Lint with pylint
+      - name: Build and Install Package
         run: |
-          python -m pip install pylint
-          python -m pylint pyface --rcfile=.github/workflows/.pylintrc
+          python3 setup.py bdist_wheel --universal && \
+          wheel_file=$(ls dist/*.whl 2>/dev/null || echo '') && \
+          if [ -z "$wheel_file" ]; then
+            echo 'Error: No wheel file found in dist directory.' && exit 1
+          fi && \
+          python3 -m pip install $wheel_file --force-reinstall
+
+      - name: Lint with Pylint
+        run: |
+          python3 -m pylint pyface --rcfile=.github/workflows/.pylintrc
 
       - name: Run tests with pytest
         run: |
