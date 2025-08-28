@@ -42,7 +42,7 @@ def test_face_detection(data):
 def test_face_detection_cpu(data):
     m = pf.build_face_detection(name="scrfd", model_name="scrfd_10g_gnkps_fp32", backend="cpu")
     img = cb.imread(data["img_fpath"])
-    expected = np.load(data["expected"], allow_pickle=False)
+    expected = np.load(data["expected"], allow_pickle=True)
     faces_on_img = m(imgs=[img] * 8)[0]
 
     assert faces_on_img["infos"]["num_proposals"]
@@ -60,7 +60,7 @@ def test_face_detection_batch(data):
         backend=cb.get_recommended_backend(),
     )
     img = cb.imread(data["img_fpath"])
-    expected = np.load(data["expected"], allow_pickle=False)
+    expected = np.load(data["expected"], allow_pickle=True)
     faces_list = m(imgs=[img] * 5)
     for faces in faces_list:
         assert faces["infos"]["num_proposals"]

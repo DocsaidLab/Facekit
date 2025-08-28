@@ -27,8 +27,8 @@ TEST_DATA = [
 def test_face_depth(data):
     m = build_face_depth(backend="cpu")
     img = cb.imread(data["img_fpath"])
-    expected = np.load(data["expected"], allow_pickle=False)
-    boxes = np.load(data["detect"], allow_pickle=False)["boxes"]
+    expected = np.load(data["expected"], allow_pickle=True)
+    boxes = np.load(data["detect"], allow_pickle=True)["boxes"]
     results = m(imgs=[img], boxes=cb.Boxes(boxes), return_depth=True)[0]
 
     assert_allclose(results["param"], expected["param"])
@@ -41,8 +41,8 @@ def test_face_depth(data):
 def test_face_depth_batch(data):
     m = build_face_depth(batch_size=4)
     img = cb.imread(data["img_fpath"])
-    expected = np.load(data["expected"], allow_pickle=False)
-    boxes = np.load(data["detect"], allow_pickle=False)["boxes"]
+    expected = np.load(data["expected"], allow_pickle=True)
+    boxes = np.load(data["detect"], allow_pickle=True)["boxes"]
     results = m(imgs=[img] * 6, boxes=cb.Boxes(np.tile(boxes, (6, 1))), return_depth=True)
 
     for result in results:
@@ -56,7 +56,7 @@ def gen_target():
     m = build_face_depth(backend="cpu")
     for data in TEST_DATA:
         img = cb.imread(data["img_fpath"])
-        boxes = np.load(data["detect"], allow_pickle=False)["boxes"]
+        boxes = np.load(data["detect"], allow_pickle=True)["boxes"]
         results = m(imgs=[img], boxes=cb.Boxes(boxes), return_depth=True)[0]
         np.savez_compressed(
             data["expected"],
