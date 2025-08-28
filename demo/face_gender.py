@@ -3,10 +3,10 @@ from fire import Fire
 
 import pyface.components as pf
 
-cur_folder = cb.get_curdir(__file__)
+RESOURCE_DIR = cb.get_curdir(__file__).parent / "tests" / "resources"
 
 
-def main(img_path: str = str(cur_folder / "data" / "EmmaWatson1.jpg")):
+def main(img_path: str = str(RESOURCE_DIR / "EmmaWatson1.jpg")):
     face_detect = pf.build_face_detection()
     face_gender = pf.build_gender_detection()
 
@@ -16,7 +16,7 @@ def main(img_path: str = str(cur_folder / "data" / "EmmaWatson1.jpg")):
     results = face_gender([img], [face_box])
     plotted = face_gender.draw_results(img, [face_box], results)
 
-    out_folder = cur_folder / "output"
+    out_folder = cb.get_curdir(__file__) / "output"
     out_folder.mkdir(exist_ok=True, parents=True)
     cb.imwrite(plotted, out_folder / "face_gender.png")
 

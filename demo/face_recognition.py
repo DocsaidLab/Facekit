@@ -3,12 +3,12 @@ from fire import Fire
 
 import pyface as pf
 
-cur_folder = cb.get_curdir(__file__)
+RESOURCE_DIR = cb.get_curdir(__file__).parent / "tests" / "resources"
 
 
 def main(
-    src_path: str = str(cur_folder / "data" / "EmmaWatson1.jpg"),
-    tgt_path: str = str(cur_folder / "data" / "face_bank" / "EmmaWatson.jpg"),
+    src_path: str = str(RESOURCE_DIR / "EmmaWatson1.jpg"),
+    tgt_path: str = str(RESOURCE_DIR / "face_bank" / "EmmaWatson.jpg"),
 ):
     face_detection = pf.build_face_detection()
     face_recognition = pf.build_face_recognition()
@@ -17,7 +17,7 @@ def main(
     tgt_img = cb.imread(tgt_path)
     lmks = [p["lmk5pts"][0] for p in face_detection([src_img, tgt_img])]
 
-    out_folder = cur_folder / "output"
+    out_folder = cb.get_curdir(__file__) / "output"
     out_folder.mkdir(exist_ok=True, parents=True)
     results = face_recognition([src_img, tgt_img], lmks)
     src_emb = results[0]["embeddings"]

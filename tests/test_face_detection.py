@@ -11,11 +11,11 @@ ANSWER_DIR.mkdir(exist_ok=True, parents=True)
 
 TEST_DATA = [
     {
-        "img_fpath": RESOURCE_DIR / "EmmaWatson1.png",
+        "img_fpath": RESOURCE_DIR / "EmmaWatson1.jpg",
         "expected": ANSWER_DIR / "EmmaWatson1_detection.npz",
     },
     {
-        "img_fpath": RESOURCE_DIR / "JohnnyDepp1.png",
+        "img_fpath": RESOURCE_DIR / "JohnnyDepp1.jpg",
         "expected": ANSWER_DIR / "JohnnyDepp1_detection.npz",
     },
 ]
