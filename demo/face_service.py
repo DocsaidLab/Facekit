@@ -3,12 +3,12 @@ from fire import Fire
 
 import pyface as pf
 
-cur_folder = cb.get_curdir(__file__)
+RESOURCE_DIR = cb.get_curdir(__file__).parent / "tests" / "resources"
 
 
 def main(
-    img_path: str = str(cur_folder / "data" / "EmmaWatson1.jpg"),
-    face_bank: str = str(cur_folder / "data" / "face_bank"),
+    img_path: str = str(RESOURCE_DIR / "EmmaWatson1.jpg"),
+    face_bank: str = str(RESOURCE_DIR / "face_bank"),
 ):
     face_service = pf.FaceService(
         enable_gender=True,
@@ -19,7 +19,9 @@ def main(
     )
     img = cb.imread(img_path)
     faces_on_img = face_service([img], do_1n=True)[0]
-    cb.imwrite(faces_on_img.gen_info_img(), str(cur_folder / "output" / "face_service.jpg"))
+    out_folder = cb.get_curdir(__file__) / "output"
+    out_folder.mkdir(exist_ok=True, parents=True)
+    cb.imwrite(faces_on_img.gen_info_img(), str(out_folder / "face_service.jpg"))
 
 
 if __name__ == "__main__":

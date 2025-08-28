@@ -1,81 +1,87 @@
 import capybara as cb
-import cv2
 import numpy as np
 import pytest
 
 import pyface as pf
+from tests.tools import assert_allclose
 
 RESOURCE_DIR = cb.get_curdir(__file__) / "resources"
+ANSWER_DIR = RESOURCE_DIR / "answer"
+ANSWER_DIR.mkdir(exist_ok=True, parents=True)
 
 TEST_DATA = [
     {
-        "img_fpath": RESOURCE_DIR / "EmmaWatson1.png",
-        "expected": {
-            "boxes": np.array([[412.52731323, 194.85551453, 751.04302979, 642.71121216]], dtype="float32"),
-            "lmk5pts": np.array(
-                [
-                    [
-                        [449.80097198, 366.0531826],
-                        [581.79126072, 367.359972],
-                        [465.10058594, 458.07265472],
-                        [460.2443161, 527.72718811],
-                        [570.59969902, 529.41928101],
-                    ]
-                ],
-                dtype="float32",
-            ),
-            "scores": np.array([[0.80300564]], dtype="float32"),
-        },
+        "img_fpath": RESOURCE_DIR / "EmmaWatson1.jpg",
+        "expected": ANSWER_DIR / "EmmaWatson1_detection.npz",
     },
     {
-        "img_fpath": RESOURCE_DIR / "JohnnyDepp1.png",
-        "expected": {
-            "boxes": np.array([[434.57501197, 188.672789, 691.22249818, 507.53144979]], dtype="float32"),
-            "lmk5pts": np.array(
-                [
-                    [
-                        [478.99239435, 284.38753269],
-                        [585.12645214, 287.86553004],
-                        [500.60212723, 351.98840269],
-                        [480.54181178, 422.01026003],
-                        [553.02625371, 426.00003743],
-                    ]
-                ],
-                dtype="float32",
-            ),
-            "scores": np.array([[0.7277902]], dtype="float32"),
-        },
+        "img_fpath": RESOURCE_DIR / "JohnnyDepp1.jpg",
+        "expected": ANSWER_DIR / "JohnnyDepp1_detection.npz",
     },
 ]
 
 
 @pytest.mark.parametrize("data", TEST_DATA)
-def test_build_face_detection(data):
-    model = pf.build_face_detection(
+def test_face_detection(data):
+    m = pf.build_face_detection(
         name="scrfd",
         model_name="scrfd_10g_gnkps_fp32",
-        backend=pf.get_ort_backend(),
+        backend=cb.get_recommended_backend(),
     )
-    img = cv2.imread(data["img_fpath"])
-    faces_on_img = model(imgs=[img])[0]
+    img = cb.imread(data["img_fpath"])
+    expected = np.load(data["expected"])
+    faces_on_img = m(imgs=[img])[0]
 
     assert faces_on_img["infos"]["num_proposals"]
-    np.testing.assert_allclose(faces_on_img["boxes"], data["expected"]["boxes"], rtol=1e-4)
-    np.testing.assert_allclose(faces_on_img["lmk5pts"], data["expected"]["lmk5pts"], rtol=1e-4)
-    np.testing.assert_allclose(faces_on_img["scores"], data["expected"]["scores"], rtol=1e-4)
+    assert_allclose(faces_on_img["boxes"], expected["boxes"])
+    assert_allclose(faces_on_img["lmk5pts"], expected["lmk5pts"])
+    assert_allclose(faces_on_img["scores"], expected["scores"])
 
 
 @pytest.mark.parametrize("data", TEST_DATA)
-def test_build_face_detection_cpu(data):
-    model = pf.build_face_detection(
-        name="scrfd",
-        model_name="scrfd_10g_gnkps_fp32",
-        backend="cpu",
-    )
-    img = cv2.imread(data["img_fpath"])
-    faces_on_img = model(imgs=[img])[0]
+def test_face_detection_cpu(data):
+    m = pf.build_face_detection(name="scrfd", model_name="scrfd_10g_gnkps_fp32", backend="cpu")
+    img = cb.imread(data["img_fpath"])
+    expected = np.load(data["expected"], allow_pickle=True)
+    faces_on_img = m(imgs=[img] * 8)[0]
 
     assert faces_on_img["infos"]["num_proposals"]
-    np.testing.assert_allclose(faces_on_img["boxes"], data["expected"]["boxes"], rtol=1e-4)
-    np.testing.assert_allclose(faces_on_img["lmk5pts"], data["expected"]["lmk5pts"], rtol=1e-4)
-    np.testing.assert_allclose(faces_on_img["scores"], data["expected"]["scores"], rtol=1e-4)
+    assert_allclose(faces_on_img["boxes"], expected["boxes"])
+    assert_allclose(faces_on_img["lmk5pts"], expected["lmk5pts"])
+    assert_allclose(faces_on_img["scores"], expected["scores"])
+
+
+@pytest.mark.parametrize("data", TEST_DATA)
+def test_face_detection_batch(data):
+    m = pf.build_face_detection(
+        name="scrfd",
+        model_name="scrfd_10g_gnkps_fp32",
+        batch_size=4,
+        backend=cb.get_recommended_backend(),
+    )
+    img = cb.imread(data["img_fpath"])
+    expected = np.load(data["expected"], allow_pickle=True)
+    faces_list = m(imgs=[img] * 5)
+    for faces in faces_list:
+        assert faces["infos"]["num_proposals"]
+        assert_allclose(faces["boxes"], expected["boxes"])
+        assert_allclose(faces["lmk5pts"], expected["lmk5pts"])
+        assert_allclose(faces["scores"], expected["scores"])
+
+
+def gen_target():
+    m = pf.build_face_detection(name="scrfd", model_name="scrfd_10g_gnkps_fp32", backend="cpu")
+    for data in TEST_DATA:
+        img = cb.imread(data["img_fpath"])
+        faces_on_img = m(imgs=[img] * 8)[0]
+        np.savez_compressed(
+            data["expected"],
+            boxes=faces_on_img["boxes"],
+            lmk5pts=faces_on_img["lmk5pts"],
+            scores=faces_on_img["scores"],
+            allow_pickle=False,
+        )
+
+
+if __name__ == "__main__":
+    gen_target()

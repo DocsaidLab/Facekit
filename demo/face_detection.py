@@ -5,11 +5,11 @@ from fire import Fire
 
 import pyface.components as pf
 
-cur_folder = cb.get_curdir(__file__)
+RESOURCE_DIR = cb.get_curdir(__file__).parent / "tests" / "resources"
 
 
 def main(
-    img_path: str = str(cur_folder / "data" / "EmmaWatson1.jpg"),
+    img_path: str = str(RESOURCE_DIR / "EmmaWatson1.jpg"),
     score_th: float = 0.5,
     inp_size: Tuple[int, int] = (480, 640),
 ):
@@ -22,7 +22,7 @@ def main(
     proposals_list = face_detection([img] * 7)
     plotted = face_detection.draw_proposals(img, proposals_list[0])
 
-    out_folder = cur_folder / "output"
+    out_folder = cb.get_curdir(__file__) / "output"
     out_folder.mkdir(exist_ok=True, parents=True)
     cb.imwrite(plotted, out_folder / "face_detection.png")
 

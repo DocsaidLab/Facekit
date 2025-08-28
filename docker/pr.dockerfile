@@ -15,11 +15,3 @@ RUN apt-get update -y && apt-get upgrade -y && \
     ln -sf /usr/share/zoneinfo/$TZ /etc/localtime && \
     dpkg-reconfigure -f noninteractive tzdata && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# 將 python 指令指向 python3
-RUN ln -s /usr/bin/python3 /usr/bin/python && \
-    python -m pip install --no-cache-dir -U pip
-
-WORKDIR /code
-
-CMD ["bash"]

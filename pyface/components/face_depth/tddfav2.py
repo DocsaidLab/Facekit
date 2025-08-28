@@ -7,7 +7,7 @@ import numpy as np
 
 from ..enums import FacePose
 from ..utils import append_to_batch, detach_from_batch, download_model_and_return_model_fpath
-from .Sim3DR import sim3dr_cython
+from .Sim3DR import sim3dr_cython  # pylint: disable=E0611
 
 
 def rasterize(
@@ -168,9 +168,7 @@ def _prepare_bfm_npz(
     return u_base, w_shp_base, w_exp_base
 
 
-def _parse_tffda_param(
-    param: np.ndarray,
-) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+def _parse_tffda_param(param: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     matrix pose form
     param: shape = (trans_dim + shape_dim + exp_dim) i.e., 62 = 12 + 40 + 10
@@ -261,16 +259,12 @@ class TDDFAV2:
         dummy_inputs = {k: np.zeros(input_dims[k], dtype=v["dtype"]) for k, v in self.bfm_engine.input_infos.items()}
         self.bfm_engine(**dummy_inputs)
 
-    def _transform(
-        self,
-        img: np.ndarray,
-        box: cb.Box,
-    ) -> Tuple[np.ndarray, Tuple[float, float], np.ndarray]:
+    def _transform(self, img: np.ndarray, box: cb.Box) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         inp_w, inp_h = self.engine.input_infos["input"]["shape"][2:]
 
         expanded_box = box.square().scale(fx=0.98, fy=0.98)
+        scale = np.array([expanded_box.width / inp_w, expanded_box.height / inp_h])
         shift = expanded_box.left_top
-        scale = expanded_box.width / inp_w, expanded_box.height / inp_h
         blob = cb.imcropbox(img, expanded_box)
         blob = cb.imresize(blob, (inp_w, inp_h))
         blob = blob.transpose(2, 0, 1)[None]
@@ -280,7 +274,7 @@ class TDDFAV2:
         self,
         imgs: List[np.ndarray],
         boxes: List[cb.Box],
-    ):
+    ) -> Tuple[List[np.ndarray], List[np.ndarray], List[np.ndarray]]:
         if len(imgs) != len(boxes):
             raise ValueError(f"imgs and boxes should have same length, but got {len(imgs)} and {len(boxes)}")
 
@@ -294,11 +288,7 @@ class TDDFAV2:
             shifts.append(shift)
         return blobs, scales, shifts
 
-    def _reconstruct_vertices(
-        self,
-        param: np.ndarray,
-        dense_flag: bool = False,
-    ) -> np.ndarray:
+    def _reconstruct_vertices(self, param: np.ndarray, dense_flag: bool = False) -> np.ndarray:
         def _similar_transform(pts3d, scales):
             x_s, y_s = scales[..., 1], scales[..., 0]
             z_s = (x_s + y_s) / 2
@@ -374,15 +364,22 @@ class TDDFAV2:
         blobs, scales, shifts = self.preprocess(imgs, boxes)
         preds = {k: [] for k in self.engine.output_infos.keys()}
         for batch in cb.make_batch(blobs, self.batch_size):
+            current_batch_size = len(batch)
             inputs = {
                 name: np.concatenate(append_to_batch(batch, self.batch_size)).astype(v["dtype"])  # E1123
                 for name, v in self.engine.input_infos.items()
             }
             tmp_preds = self.engine(**inputs)
             for k, v in tmp_preds.items():
-                preds[k].append(detach_from_batch(v, len(batch)))
+                preds[k].append(detach_from_batch(v, current_batch_size))
         preds = {k: np.concatenate(v, 0) for k, v in preds.items()}
-        params = np.concatenate((preds["params"], scales, shifts), -1)
+        scales = np.stack(scales, 0)  # n x 2
+        shifts = np.stack(shifts, 0)  # n x 2
+        # Ensure shapes are compatible for concatenation
+        n = preds["params"].shape[0]
+        if scales.shape[0] != n or shifts.shape[0] != n:
+            raise ValueError(f"Shape mismatch: preds['params'] has {n} rows, scales has {scales.shape[0]}, shifts has {shifts.shape[0]}")
+        params = np.concatenate((preds["params"], scales, shifts), axis=-1)
         lmk3d68pts = self._gen_3d_landmarks(params)
         pose_degrees = self._get_pose_degrees(params)
 

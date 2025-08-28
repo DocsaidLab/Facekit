@@ -85,6 +85,7 @@ class ArcFace:
         preds = {k: [] for k in self.engine.output_infos.keys()}
         b = self.metadata["InputSize"][0]
         for batch in cb.make_batch(blobs, b):
+            current_batch_size = len(batch)
             inputs = {name: np.concatenate(append_to_batch(batch, b)) for name, _ in self.engine.input_infos.items()}
             tmp_preds = self.engine(**inputs)
             if self.enable_flip:
@@ -93,7 +94,7 @@ class ArcFace:
                 for k, v in tmp_preds.items():
                     tmp_preds[k] = np.concatenate([v, tmp_flip_preds[k]], 1)
             for k, v in tmp_preds.items():
-                preds[k].append(detach_from_batch(v, len(batch)))
+                preds[k].append(detach_from_batch(v, current_batch_size))
         preds = {k: np.concatenate(v, 0) for k, v in preds.items()}
         emgeddings = l2_norm(preds["encode"])
         return [
