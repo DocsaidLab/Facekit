@@ -375,7 +375,11 @@ class TDDFAV2:
         preds = {k: np.concatenate(v, 0) for k, v in preds.items()}
         scales = np.stack(scales, 0)  # n x 2
         shifts = np.stack(shifts, 0)  # n x 2
-        params = np.concatenate((preds["params"], scales, shifts), -1)
+        # Ensure shapes are compatible for concatenation
+        n = preds["params"].shape[0]
+        if scales.shape[0] != n or shifts.shape[0] != n:
+            raise ValueError(f"Shape mismatch: preds['params'] has {n} rows, scales has {scales.shape[0]}, shifts has {shifts.shape[0]}")
+        params = np.concatenate((preds["params"], scales, shifts), axis=-1)
         lmk3d68pts = self._gen_3d_landmarks(params)
         pose_degrees = self._get_pose_degrees(params)
 

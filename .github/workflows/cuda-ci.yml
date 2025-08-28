@@ -58,7 +58,7 @@ jobs:
       options: --user ${{ needs.get_runner_and_uid.outputs.uid }} --gpus all
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
@@ -69,22 +69,16 @@ jobs:
           python-version: ${{ matrix.python-version }}
           check-latest: true
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: |
-          python3 -m pip install pytest wheel pylint pylint-flask pytest-cov typeguard
+          python -m pip install -U pip wheel "numpy>=2" "cython>=3.0.12" "setuptools>=69"
+          python setup.py build_ext --inplace
+          python -m pip install .
 
-      - name: Build and Install Package
+      - name: Lint with pylint
         run: |
-          python3 setup.py bdist_wheel --universal && \
-          wheel_file=$(ls dist/*.whl 2>/dev/null || echo '') && \
-          if [ -z "$wheel_file" ]; then
-            echo 'Error: No wheel file found in dist directory.' && exit 1
-          fi && \
-          python3 -m pip install $wheel_file --force-reinstall
-
-      - name: Lint with Pylint
-        run: |
-          python3 -m pylint pyface --rcfile=.github/workflows/.pylintrc
+          python -m pip install pylint
+          python -m pylint pyface --rcfile=.github/workflows/.pylintrc
 
       - name: Run tests with pytest
         run: |
