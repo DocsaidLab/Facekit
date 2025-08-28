@@ -7,7 +7,7 @@ import numpy as np
 
 from ..enums import FacePose
 from ..utils import append_to_batch, detach_from_batch, download_model_and_return_model_fpath
-from .Sim3DR import sim3dr_cython
+from .Sim3DR import sim3dr_cython  # pylint: disable=E0611
 
 
 def rasterize(
