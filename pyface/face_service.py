@@ -14,7 +14,7 @@ from .components import (
     build_face_recognition,
     build_gender_detection,
 )
-from .object import TDDFA, Encode, Face, Faces, Who
+from .object import TDDFA, Attribute, Encode, Eye, Face, FacePose, Faces, Mouth, Who
 
 __all__ = ["FaceService"]
 
@@ -92,23 +92,37 @@ class FaceService:
                 for box, lmk, score in zip(proposals["boxes"], proposals["lmk5pts"], proposals["scores"])
             ]
             for face in faces:
-                if gender_results is not None:
-                    face.gender = gender_results[i]["gender"]
+                if face.attribute is None:
+                    face.attribute = Attribute()
 
+                if gender_results is not None:
+                    face.attribute.gender = gender_results[i]["gender"]
                 if lmk_results is not None:
                     lmk_result = lmk_results[i]
                     face.lmk106pt = cb.Keypoints(lmk_result["lmk"])
+                    face.attribute.right_eye = Eye(
+                        is_open=lmk_result["is_right_eye_open"],
+                        score=lmk_result["right_eye_score"],
+                    )
+                    face.attribute.left_eye = Eye(
+                        is_open=lmk_result["is_left_eye_open"],
+                        score=lmk_result["left_eye_score"],
+                    )
+                    face.attribute.mouth = Mouth(
+                        is_open=lmk_result["is_mouth_open"],
+                        score=lmk_result["mouth_score"],
+                    )
                 if dep_results is not None:
                     dep_result = dep_results[i]
                     face.tddfa = TDDFA(
                         param=dep_result["param"],
                         lmk68pt=dep_result["lmk3d68pt"],
                         depth_img=dep_result["depth_img"],
-                        pose=dep_result["pose"],
                         yaw=dep_result["pose_degree"][0],
                         roll=dep_result["pose_degree"][1],
                         pitch=dep_result["pose_degree"][2],
                     )
+                    face.attribute.pose = FacePose(dep_result["pose"])
                 if enc_results is not None:
                     enc_result = enc_results[i]
                     face.encoding = Encode(
@@ -116,14 +130,6 @@ class FaceService:
                         version=enc_result["info"]["version"],
                     )
                     face.norm_img = enc_result["norm_img"]
-                # if fas_results is not None:
-                #     fas_results = fas_results[i]
-                #     face.liveness = Liveness(
-                #         is_true=fas_results["pred_label"] == "Live",
-                #         value=fas_results["score"],
-                #         threshold=fas_results["info"]["threshold"],
-                #         label=fas_results["pred_label"],
-                #     )
                 i += 1
 
         return faces_list

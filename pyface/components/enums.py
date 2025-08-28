@@ -3,21 +3,9 @@ from enum import Enum
 import capybara as cb
 
 __all__ = [
-    "MouthStatus",
-    "EyeStatus",
     "FacePose",
     "FakeType",
 ]
-
-
-class MouthStatus(cb.EnumCheckMixin, Enum):
-    Close = 0
-    Open = 1
-
-
-class EyeStatus(cb.EnumCheckMixin, Enum):
-    Close = 0
-    Open = 1
 
 
 class FacePose(cb.EnumCheckMixin, Enum):

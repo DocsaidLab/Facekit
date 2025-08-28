@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 from pybase64 import b64encode
 
-from .components.enums import EyeStatus, FacePose, FakeType
+from .components.enums import FacePose, FakeType
 
 __all__ = [
     "Eye",
@@ -17,6 +17,7 @@ __all__ = [
     "Face",
     "Faces",
     "Liveness",
+    "Attribute",
     "sort_face_by_size",
     "drop_too_small_faces",
     # "faces_to_schema",
@@ -26,8 +27,14 @@ __all__ = [
 
 @dataclass()
 class Eye(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
-    left: Optional[EyeStatus] = field(default=None)
-    right: Optional[EyeStatus] = field(default=None)
+    is_open: Optional[bool] = field(default=None)
+    score: Optional[float] = field(default=None)
+
+
+@dataclass()
+class Mouth(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
+    is_open: Optional[bool] = field(default=None)
+    score: Optional[float] = field(default=None)
 
 
 @dataclass()
@@ -50,7 +57,6 @@ class TDDFA(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     param: Optional[np.ndarray] = field(default=None)
     lmk68pt: Optional[np.ndarray] = field(default=None)
     depth_img: Optional[np.ndarray] = field(default=None)
-    pose: Optional[FacePose] = field(default=None)
     yaw: Optional[float] = field(default=None)
     roll: Optional[float] = field(default=None)
     pitch: Optional[float] = field(default=None)
@@ -70,10 +76,20 @@ class Who(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
 
 
 @dataclass()
+class Attribute(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
+    age: Optional[int] = field(default=None)
+    gender: Optional[str] = field(default=None)
+    race: Optional[str] = field(default=None)
+    pose: Optional[FacePose] = field(default=None)
+    left_eye: Optional[Eye] = field(default=None)
+    right_eye: Optional[Eye] = field(default=None)
+    mouth: Optional[Mouth] = field(default=None)
+
+
+@dataclass()
 class Face(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     box: cb.Box
     score: Union[float, np.number] = field(default=1.0)
-    gender: Optional[str] = field(default=None)
     lmk5pt: Optional[cb.Keypoints] = field(default=None)
     norm_img: Optional[np.ndarray] = field(default=None)
     tddfa: Optional[TDDFA] = field(default=None)
@@ -81,14 +97,14 @@ class Face(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     who: Optional[Who] = field(default=None)
     lmk106pt: Optional[cb.Keypoints] = field(default=None)
     liveness: Optional[Liveness] = field(default=None)
+    attribute: Optional[Attribute] = field(default=None)
     jsonable_func = {
         "vector": lambda x: b64encode(x.astype("float32").tobytes()).decode("utf-8") if x is not None else None,
-        "norm_img": lambda x: cb.img_to_b64str(x, cb.ImgCode.PNG) if x is not None else None,
+        "norm_img": lambda x: cb.img_to_b64str(x, cb.IMGTYP.PNG) if x is not None else None,
     }
     # pose: Optional[FacePose] = field(default=None)
     # blur: Optional[WhetherOrNot] = field(default=None)
     # occlusion: Optional[Occlusion] = field(default=None)
-    # attribute: Optional[Attribute] = field(default=None)
     # lmk68pt: Optional[cb.Keypoints] = field(default=None)
     # analysis_infos: Optional[dict] = field(default=None)
 
@@ -159,14 +175,14 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
             zipped = zip(
                 self.box,
                 self.score,
-                self.gender,
                 self.lmk5pt,
+                self.attribute,
                 self.tddfa,
                 self.who,
                 self.lmk106pt,
                 self.liveness,
             )
-            for box, score, gender, lmk5pt, tddfa, who, lmk106pt, liveness in zipped:
+            for box, score, lmk5pt, attribute, tddfa, who, lmk106pt, liveness in zipped:
                 text_size = np.clip(round(box.height / 5), 8, 32)
                 box_line_scale = (box.width / 128).clip(1, 3)
                 point_scale = (box.width / 256).clip(0.3, 2)
@@ -193,24 +209,30 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
                 loc = box.left_bottom
                 text_to_draw = ""
 
-                if gender is not None:
-                    text_to_draw += f"Gender: {gender}\n"
-                else:
-                    text_to_draw += "Gender: Unknown\n"
+                if isinstance(attribute, Attribute):
+                    if attribute.gender is not None:
+                        text_to_draw += f"Gender: {attribute.gender}\n"
+                    if attribute.age is not None:
+                        text_to_draw += f"Age: {attribute.age}\n"
+                    if attribute.race is not None:
+                        text_to_draw += f"Race: {attribute.race}\n"
+                    if isinstance(attribute.pose, FacePose):
+                        text_to_draw += f"Pose: {attribute.pose.name}\n"
+                    if isinstance(attribute.right_eye, Eye):
+                        text_to_draw += f"REye: {'open' if attribute.right_eye.is_open else 'close'} "
+                    if isinstance(attribute.left_eye, Eye):
+                        text_to_draw += f"LEye: {'open' if attribute.left_eye.is_open else 'close'} "
+                    if isinstance(attribute.mouth, Mouth):
+                        text_to_draw += f"Mouth: {'open' if attribute.mouth.is_open else 'close'}\n"
 
-                if who is not None:
-                    who = who.be_jsonable() if isinstance(who, Who) else who
-                    text_to_draw += f"Who: {who['name']}\n"
-                else:
-                    text_to_draw += "Who: Unknown\n"
+                if isinstance(who, Who):
+                    text_to_draw += f"Who: {who.name}\n"
 
-                if liveness is not None:
-                    liveness = liveness.be_jsonable() if isinstance(liveness, Liveness) else liveness
-                    text_to_draw += f"FAS: like {liveness['label']}\n"
+                if isinstance(liveness, Liveness):
+                    text_to_draw += f"FAS: like {liveness.label}\n"
 
-                if tddfa is not None:
-                    tddfa = tddfa.be_jsonable() if isinstance(tddfa, TDDFA) else tddfa
-                    text_to_draw += f"Yaw: {tddfa['yaw']:.2f}, Roll: {tddfa['roll']:.2f}, Pitch: {tddfa['pitch']:.2f}\n"
+                if isinstance(tddfa, TDDFA):
+                    text_to_draw += f"Yaw: {tddfa.yaw:.2f}, Roll: {tddfa.roll:.2f}, Pitch: {tddfa.pitch:.2f}\n"
 
                 if lmk106pt is not None:
                     img = cb.draw_points(img, lmk106pt.numpy(), point_scale, colors=(100, 220, 0))

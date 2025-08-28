@@ -304,12 +304,7 @@ class TDDFAV2:
 
         P, alpha_shp, alpha_exp, scales, shifts = [x for x in _parse_tffda_param(param)]
         if dense_flag:
-            pts3d = self.bfm_engine(
-                R=P[..., :3],
-                offset=P[..., 3:],
-                alpha_shp=alpha_shp,
-                alpha_exp=alpha_exp,
-            )["output"]
+            pts3d = self.bfm_engine(R=P[..., :3], offset=P[..., 3:], alpha_shp=alpha_shp, alpha_exp=alpha_exp)["output"]
         else:
             param = self._u + self._w_shp @ alpha_shp + self._w_exp @ alpha_exp
             pts3d = P[..., :3] @ param.reshape(3, -1, order="F")
@@ -378,7 +373,9 @@ class TDDFAV2:
         # Ensure shapes are compatible for concatenation
         n = preds["params"].shape[0]
         if scales.shape[0] != n or shifts.shape[0] != n:
-            raise ValueError(f"Shape mismatch: preds['params'] has {n} rows, scales has {scales.shape[0]}, shifts has {shifts.shape[0]}")
+            raise ValueError(
+                f"Shape mismatch: preds['params'] has {n} rows, scales has {scales.shape[0]}, shifts has {shifts.shape[0]}"
+            )
         params = np.concatenate((preds["params"], scales, shifts), axis=-1)
         lmk3d68pts = self._gen_3d_landmarks(params)
         pose_degrees = self._get_pose_degrees(params)
