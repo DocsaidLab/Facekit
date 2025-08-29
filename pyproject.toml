@@ -31,7 +31,7 @@ classifiers = [
 dependencies = [
   "numpy>=2",                 # 執行期也支援 NumPy 2
   "scikit-image",
-  "capybara-docsaid",
+  "capybara-docsaid>=0.12.0",
   "huggingface_hub"
 ]
 
