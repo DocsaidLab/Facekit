@@ -94,7 +94,6 @@ class FaceService:
             for face in faces:
                 if face.attribute is None:
                     face.attribute = Attribute()
-
                 if gender_results is not None:
                     face.attribute.gender = gender_results[i]["gender"]
                 if lmk_results is not None:

@@ -4,7 +4,6 @@ from typing import Any, List, Optional, Tuple, Union
 import capybara as cb
 import cv2
 import numpy as np
-from pybase64 import b64encode
 
 from .components.enums import FacePose, FakeType
 
@@ -98,9 +97,12 @@ class Face(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     lmk106pt: Optional[cb.Keypoints] = field(default=None)
     liveness: Optional[Liveness] = field(default=None)
     attribute: Optional[Attribute] = field(default=None)
+    # assign jsonable functions for some fields
     jsonable_func = {
-        "vector": lambda x: b64encode(x.astype("float32").tobytes()).decode("utf-8") if x is not None else None,
+        "vector": lambda x: cb.npy_to_b64str(x) if x is not None else None,
         "norm_img": lambda x: cb.img_to_b64str(x, cb.IMGTYP.PNG) if x is not None else None,
+        "depth_img": lambda x: cb.img_to_b64str(x, cb.IMGTYP.PNG) if x is not None else None,
+        "param": lambda x: cb.npy_to_b64str(x) if x is not None else None,
     }
     # pose: Optional[FacePose] = field(default=None)
     # blur: Optional[WhetherOrNot] = field(default=None)
@@ -252,7 +254,7 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
         return img
 
     def be_jsonable(self):
-        raw_image = cb.img_to_b64(self.raw_image, cb.IMGTYP.PNG).decode("utf-8") if self.raw_image is not None else None
+        raw_image = cb.img_to_b64str(self.raw_image, cb.IMGTYP.PNG) if self.raw_image is not None else None
         return {
             "raw_image": raw_image,
             "faces": [x.be_jsonable() for x in self.faces],
