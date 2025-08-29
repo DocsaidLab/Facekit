@@ -41,8 +41,8 @@ class CoordinateReg:
         backend: str = "cuda",
         session_option: Dict[str, Any] = {},
         provider_option: Dict[str, Any] = {},
-        mouth_th: Optional[float] = 0.2,
-        eye_th: Optional[float] = 0.5,
+        mouth_th: Optional[float] = 0.5,
+        eye_th: Optional[float] = 0.2,
     ):
         if model_path is None:
             model_path = download_model_and_return_model_fpath(
@@ -78,11 +78,7 @@ class CoordinateReg:
             Ms.append(M)
         return blobs, Ms
 
-    def postprocess(
-        self,
-        preds: np.ndarray,
-        Ms: List[np.ndarray],
-    ) -> List[np.ndarray]:
+    def postprocess(self, preds: np.ndarray, Ms: List[np.ndarray]) -> List[np.ndarray]:
         h, w = self.metadata["InputSize"][-2:]
         lmks = []
         for pred, M in zip(preds, Ms):
@@ -124,11 +120,7 @@ class CoordinateReg:
         eye_ratio = norm_ratio(eye_w, eye_h, 1, 0)
         return eye_ratio
 
-    def __call__(
-        self,
-        imgs: List[np.ndarray],
-        boxes: List[cb.Box],
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+    def __call__(self, imgs: List[np.ndarray], boxes: List[cb.Box]) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         blobs, Ms = self.preprocess(imgs, boxes)
         preds = {k: [] for k in self.engine.output_infos.keys()}
         for blob in blobs:
@@ -148,6 +140,9 @@ class CoordinateReg:
                 "mouth_score": mouth_score[i],
                 "right_eye_score": right_eye_score[i],
                 "left_eye_score": left_eye_score[i],
+                "is_mouth_open": mouth_score[i] > self.metadata["Mouth_th"],
+                "is_right_eye_open": right_eye_score[i] > self.metadata["Eye_th"],
+                "is_left_eye_open": left_eye_score[i] > self.metadata["Eye_th"],
                 "info": {
                     "model_fpath": self.model_path,
                     "thresholds": {
@@ -176,12 +171,7 @@ class CoordinateReg:
                 f"Left Eye: {result['left_eye_score'].round(4)}\n"
             )
             text_size = np.clip(round(face_box.height * 0.05) + 1, 1, max_text_size)
-            img = cb.draw_text(
-                img=img,
-                text=text,
-                location=face_box.left_bottom,
-                text_size=text_size,
-            )
+            img = cb.draw_text(img=img, text=text, location=face_box.left_bottom, text_size=text_size)
 
         img = cb.draw_points(img, result["lmk"], scales=1, colors=(0, 255, 0))
 
@@ -195,12 +185,7 @@ class CoordinateReg:
                 text += f"{k}: {v}\n"
             text_size = np.clip(max(img.shape) // 100 + 1, 12, 20)
             location = (5, 5)
-            img = cb.draw_text(
-                img=img,
-                text=text,
-                location=location,
-                text_size=text_size,
-            )
+            img = cb.draw_text(img=img, text=text, location=location, text_size=text_size)
 
         return img
 
