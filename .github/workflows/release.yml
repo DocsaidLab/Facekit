@@ -36,7 +36,7 @@ jobs:
       - name: Bump package version
         if: ${{ matrix.os == 'ubuntu-latest' || matrix.os == 'ubuntu-24.04-arm' }}
         run: |
-          sed -i "s/__version__ = '[0-9]\+\(\.[0-9]\+\)\{1,2\}\(rc[0-9]\+\|[ab][0-9]\+\)\?'/__version__ = '${{ github.event.inputs.version_tag }}'/g" pyface/__init__.py
+          sed -E -i "s/__version__[[:space:]]*=[[:space:]]*['\"][^'\"]+['\"]/__version__ = '${{ github.event.inputs.version_tag }}'/g" pyface/__init__.py
 
       - name: Bump package version
         if: ${{ matrix.os == 'macos-13' || matrix.os == 'macos-latest' }}
