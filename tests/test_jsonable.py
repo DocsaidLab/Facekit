@@ -34,9 +34,7 @@ def test_jsonable(data):
     faces = face_service([img], do_1n=True)[0]
     output = faces.be_jsonable()
     expected = cb.load_json(data["expected"])
-    assert_allclose(np.array(output["boxes"]), np.array(expected["boxes"]))
-    assert_allclose(np.array(output["lmk5pts"]), np.array(expected["lmk5pts"]))
-    assert_allclose(np.array(output["scores"]), np.array(expected["scores"]))
+    assert output == expected
 
 
 def gen_data(data):
