@@ -29,11 +29,25 @@ class Eye(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     is_open: Optional[bool] = field(default=None)
     score: Optional[float] = field(default=None)
 
+    @classmethod
+    def from_json(cls, data) -> "Eye":
+        return cls(
+            is_open=data.get("is_open"),
+            score=data.get("score"),
+        )
+
 
 @dataclass()
 class Mouth(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     is_open: Optional[bool] = field(default=None)
     score: Optional[float] = field(default=None)
+
+    @classmethod
+    def from_json(cls, data) -> "Mouth":
+        return cls(
+            is_open=data.get("is_open"),
+            score=data.get("score"),
+        )
 
 
 @dataclass()
@@ -41,6 +55,14 @@ class WhetherOrNot(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     is_true: Optional[bool] = field(default=None)
     value: Optional[float] = field(default=None)
     threshold: Optional[float] = field(default=None)
+
+    @classmethod
+    def from_json(cls, data) -> "WhetherOrNot":
+        return cls(
+            is_true=data.get("is_true"),
+            value=data.get("value"),
+            threshold=data.get("threshold"),
+        )
 
 
 @dataclass()
@@ -50,15 +72,35 @@ class Liveness(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     threshold: Optional[Union[float, np.number]] = field(default=None)
     fake_type: Optional[FakeType] = field(default=None)
 
+    @classmethod
+    def from_json(cls, data):
+        return cls(
+            is_true=data.get("is_true"),
+            value=data.get("value"),
+            threshold=data.get("threshold"),
+            fake_type=FakeType(data["fake_type"]) if data.get("fake_type") is not None else None,
+        )
+
 
 @dataclass()
 class TDDFA(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     param: Optional[np.ndarray] = field(default=None)
-    lmk68pt: Optional[np.ndarray] = field(default=None)
+    lmk3d68pt: Optional[np.ndarray] = field(default=None)
     depth_img: Optional[np.ndarray] = field(default=None)
     yaw: Optional[float] = field(default=None)
     roll: Optional[float] = field(default=None)
     pitch: Optional[float] = field(default=None)
+
+    @classmethod
+    def from_json(cls, data) -> "TDDFA":
+        return cls(
+            param=cb.b64str_to_npy(data["param"]) if data.get("param") is not None else None,
+            lmk3d68pt=np.array(data["lmk3d68pt"]) if data.get("lmk3d68pt") is not None else None,
+            depth_img=cb.b64str_to_img(data["depth_img"]) if data.get("depth_img") is not None else None,
+            yaw=data.get("yaw"),
+            roll=data.get("roll"),
+            pitch=data.get("pitch"),
+        )
 
 
 @dataclass()
@@ -66,12 +108,27 @@ class Encode(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     vector: Optional[np.ndarray] = field(default=None)
     version: Optional[str] = field(default=None)
 
+    @classmethod
+    def from_json(cls, data) -> "Encode":
+        return cls(
+            vector=cb.b64str_to_npy(data["vector"]) if data.get("vector") is not None else None,
+            version=data.get("version"),
+        )
+
 
 @dataclass()
 class Who(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     name: Optional[str] = field(default="?")
     confidence: Optional[float] = field(default=None)
     recognized_level: Optional[int] = field(default=None)
+
+    @classmethod
+    def from_json(cls, data) -> "Who":
+        return cls(
+            name=data.get("name", "?"),
+            confidence=data.get("confidence"),
+            recognized_level=data.get("recognized_level"),
+        )
 
 
 @dataclass()
@@ -83,6 +140,18 @@ class Attribute(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     left_eye: Optional[Eye] = field(default=None)
     right_eye: Optional[Eye] = field(default=None)
     mouth: Optional[Mouth] = field(default=None)
+
+    @classmethod
+    def from_json(cls, data) -> "Attribute":
+        return cls(
+            age=data.get("age"),
+            gender=data.get("gender"),
+            race=data.get("race"),
+            pose=FacePose.obj_to_enum(data["pose"]) if data.get("pose") is not None else None,
+            left_eye=Eye.from_json(data["left_eye"]) if data.get("left_eye") is not None else None,
+            right_eye=Eye.from_json(data["right_eye"]) if data.get("right_eye") is not None else None,
+            mouth=Mouth.from_json(data["mouth"]) if data.get("mouth") is not None else None,
+        )
 
 
 @dataclass()
@@ -107,8 +176,23 @@ class Face(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
     # pose: Optional[FacePose] = field(default=None)
     # blur: Optional[WhetherOrNot] = field(default=None)
     # occlusion: Optional[Occlusion] = field(default=None)
-    # lmk68pt: Optional[cb.Keypoints] = field(default=None)
+    # lmk3d68pt: Optional[cb.Keypoints] = field(default=None)
     # analysis_infos: Optional[dict] = field(default=None)
+
+    @classmethod
+    def from_json(cls, data: dict) -> "Face":
+        return cls(
+            box=cb.Box(data["box"]),
+            score=data["score"],
+            lmk5pt=cb.Keypoints(np.array(data["lmk5pt"])) if data.get("lmk5pt") is not None else None,
+            norm_img=cb.b64str_to_img(data["norm_img"]) if data.get("norm_img") is not None else None,
+            tddfa=TDDFA.from_json(data["tddfa"]) if data.get("tddfa") is not None else None,
+            encoding=Encode.from_json(data["encoding"]) if data.get("encoding") is not None else None,
+            who=Who.from_json(data["who"]) if data.get("who") is not None else None,
+            lmk106pt=cb.Keypoints(np.array(data["lmk106pt"])) if data.get("lmk106pt") is not None else None,
+            liveness=Liveness.from_json(data["liveness"]) if data.get("liveness") is not None else None,
+            attribute=Attribute.from_json(data["attribute"]) if data.get("attribute") is not None else None,
+        )
 
 
 ATTR_NAMES = [f.name for f in fields(Face)]
@@ -259,6 +343,13 @@ class Faces(cb.DataclassToJsonMixin, cb.DataclassCopyMixin):
             "raw_image": raw_image,
             "faces": [x.be_jsonable() for x in self.faces],
         }
+
+    @classmethod
+    def from_json(cls, data: dict) -> "Faces":
+        return cls(
+            raw_image=cb.b64str_to_img(data["raw_image"]) if data.get("raw_image") is not None else None,
+            faces=[Face.from_json(x) for x in data.get("faces", [])],
+        )
 
 
 # def _remove_none_in_jsonized_face(jsonized_face: dict) -> dict:

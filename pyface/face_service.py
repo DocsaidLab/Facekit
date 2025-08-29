@@ -115,7 +115,7 @@ class FaceService:
                     dep_result = dep_results[i]
                     face.tddfa = TDDFA(
                         param=dep_result["param"],
-                        lmk68pt=dep_result["lmk3d68pt"],
+                        lmk3d68pt=dep_result["lmk3d68pt"],
                         depth_img=dep_result["depth_img"],
                         yaw=dep_result["pose_degree"][0],
                         roll=dep_result["pose_degree"][1],
